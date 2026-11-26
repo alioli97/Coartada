@@ -554,7 +554,10 @@ class _ClueTile extends StatelessWidget {
               children: [
                 Opacity(
                   opacity: done ? 0.4 : 1,
-                  child: SuspectAvatar(rosterIndex: rosterIndex, size: 28),
+                  child: SuspectAvatar(
+                    rosterIndex: rosterIndex,
+                    size: minAvatarSize,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
