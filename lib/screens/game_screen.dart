@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
@@ -42,7 +43,14 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen>
+    with SingleTickerProviderStateMixin {
+  /// Board shake after a wrong check (cause → effect, never blocks input).
+  late final AnimationController _shake = AnimationController(
+    vsync: this,
+    duration: Motion.shake,
+  );
+
   GameController get game => widget.controller;
   late final AppLifecycleListener _lifecycle;
 
@@ -91,6 +99,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
+    _shake.dispose();
     _lifecycle.dispose();
     game.removeListener(_autosave);
     if (_dirty) _persist();
@@ -123,6 +132,9 @@ class _GameScreenState extends State<GameScreen> {
       case CheckResult.incomplete:
         _snack(game.conflicts.isNotEmpty ? s.conflict : s.incomplete);
       case CheckResult.wrong:
+        if (!MediaQuery.of(context).disableAnimations) {
+          _shake.forward(from: 0);
+        }
         _haptic(HapticFeedback.heavyImpact);
         _snack(game.conflicts.isNotEmpty ? s.conflict : s.wrong);
       case CheckResult.correct:
@@ -165,8 +177,15 @@ class _GameScreenState extends State<GameScreen> {
       );
       if (pick == null || !mounted) return; // closed: can reopen with Check
       if (game.accuse(pick)) {
+        // A "not them" message from a wrong guess must not linger.
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
         _haptic(HapticFeedback.mediumImpact);
         widget.appState.recordSolved(p, game.elapsed, daily: game.daily);
+        // Let the reveal (dimmed rooms, outlined crime scene) play first.
+        await Future<void>.delayed(
+          Motion.of(context, Motion.reveal + Motion.revealHold),
+        );
+        if (!mounted) return;
         await _showSolved();
       } else {
         _haptic(HapticFeedback.heavyImpact);
@@ -294,12 +313,25 @@ class _GameScreenState extends State<GameScreen> {
                   children: [
                     _gutter(_Briefing(puzzle: p, strings: s)),
                     const SizedBox(height: 16),
-                    Center(
-                      child: BoardView(
-                        controller: game,
-                        strings: s,
-                        onTap: _onTap,
-                        visualHelp: widget.appState.visualHelp,
+                    AnimatedBuilder(
+                      animation: _shake,
+                      // A decaying side-to-side wobble: transform only.
+                      builder: (context, child) => Transform.translate(
+                        offset: Offset(
+                          math.sin(_shake.value * math.pi * 6) *
+                              8 *
+                              (1 - _shake.value),
+                          0,
+                        ),
+                        child: child,
+                      ),
+                      child: Center(
+                        child: BoardView(
+                          controller: game,
+                          strings: s,
+                          onTap: _onTap,
+                          visualHelp: widget.appState.visualHelp,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),

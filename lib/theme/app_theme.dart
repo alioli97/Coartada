@@ -227,3 +227,30 @@ class GameColors extends ThemeExtension<GameColors> {
 extension GameColorsX on BuildContext {
   GameColors get game => Theme.of(this).extension<GameColors>()!;
 }
+
+/// Shared motion tokens (UI UX Pro Max: one rhythm for the whole app,
+/// decelerate on arrival, exits shorter than entries). Every animation goes
+/// through [Motion.of], which returns zero when the system asks for reduced
+/// motion, so the final state is always shown at once.
+abstract final class Motion {
+  /// A suspect dropping into a square.
+  static const place = Duration(milliseconds: 220);
+
+  /// Board shake after a wrong check: short, so it never feels like a block.
+  static const shake = Duration(milliseconds: 360);
+
+  /// Final reveal: the other rooms dim and the victim's room is outlined.
+  static const reveal = Duration(milliseconds: 700);
+
+  /// How long the reveal stays on screen before the case-closed dialog.
+  static const revealHold = Duration(milliseconds: 600);
+
+  static const enter = Curves.easeOutCubic;
+
+  /// Slight overshoot for things that "land".
+  static const land = Curves.easeOutBack;
+
+  /// [d], or zero when animations are disabled (reduced motion).
+  static Duration of(BuildContext context, Duration d) =>
+      MediaQuery.of(context).disableAnimations ? Duration.zero : d;
+}

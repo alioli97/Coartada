@@ -114,6 +114,10 @@ void main() {
     expect(find.text('¿Quién fue?'), findsOneWidget);
     await tester.tap(find.widgetWithText(ListTile, p.name(p.culprit)));
     await tester.pumpAndSettle();
+    // The reveal plays before the dialog.
+    expect(find.text('¡Caso cerrado!'), findsNothing);
+    await tester.pump(Motion.reveal + Motion.revealHold);
+    await tester.pumpAndSettle();
     expect(find.text('¡Caso cerrado!'), findsOneWidget);
     expect(app.stats(Level.apprentice, Variant.classic).solved, 1);
   });

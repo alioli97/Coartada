@@ -40,7 +40,6 @@ class BoardView extends StatelessWidget {
     final conflicts = visualHelp ? c.conflicts : const <int>{};
     final takenRows = visualHelp ? c.takenRows : const <int>{};
     final takenCols = visualHelp ? c.takenCols : const <int>{};
-    final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     return LayoutBuilder(
       builder: (context, box) {
@@ -104,10 +103,36 @@ class BoardView extends StatelessWidget {
                             controller: c,
                             strings: strings,
                             conflict: conflicts.contains(c.personAt(i)),
-                            reduceMotion: reduceMotion,
                             onTap: () => onTap(i),
                           ),
                         ),
+                      // Final reveal, once the case is solved: the other
+                      // rooms dim and the victim's room is outlined.
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(
+                              end: c.phase == Phase.solved ? 1.0 : 0.0,
+                            ),
+                            duration: Motion.of(context, Motion.reveal),
+                            curve: Motion.enter,
+                            builder: (context, t, _) => t == 0
+                                ? const SizedBox.expand()
+                                : CustomPaint(
+                                    painter: _RevealPainter(
+                                      board: b,
+                                      room:
+                                          b.roomOf[c.puzzle.solution[c
+                                              .puzzle
+                                              .victim]],
+                                      t: t,
+                                      dim: scheme.surface,
+                                      outline: scheme.secondary,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -127,7 +152,6 @@ class _Cell extends StatelessWidget {
     required this.controller,
     required this.strings,
     required this.conflict,
-    required this.reduceMotion,
     required this.onTap,
   });
 
@@ -136,7 +160,6 @@ class _Cell extends StatelessWidget {
   final GameController controller;
   final Strings strings;
   final bool conflict;
-  final bool reduceMotion;
   final VoidCallback onTap;
 
   @override
@@ -155,6 +178,9 @@ class _Cell extends StatelessWidget {
         ring = scheme.error;
       } else if (c.selected == person) {
         ring = scheme.secondary;
+      } else if (c.phase == Phase.solved &&
+          (person == p.victim || person == p.culprit)) {
+        ring = scheme.secondary; // spotlight on the two people in the room
       } else if (c.locked.contains(person)) {
         ring = scheme.primary;
       }
@@ -201,27 +227,94 @@ class _Cell extends StatelessWidget {
                   size: size * 0.5,
                   color: scheme.onSurfaceVariant,
                 ),
-              AnimatedScale(
-                scale: person == null ? 0 : 1,
-                duration: reduceMotion
-                    ? Duration.zero
-                    : const Duration(milliseconds: 180),
-                curve: Curves.easeOutBack,
-                child: person == null
-                    ? SizedBox.square(dimension: size * 0.7)
-                    : SuspectAvatar(
-                        rosterIndex: p.cast[person],
-                        size: size * 0.7,
-                        isVictim: person == p.victim,
-                        ring: ring,
+              if (person != null)
+                // Keyed by person and square: placing or moving someone
+                // replays the drop; the final state never depends on it.
+                TweenAnimationBuilder<double>(
+                  key: ValueKey('$person@$index'),
+                  tween: Tween(begin: 0, end: 1),
+                  duration: Motion.of(context, Motion.place),
+                  curve: Motion.land,
+                  builder: (context, t, child) => Opacity(
+                    opacity: t.clamp(0.0, 1.0),
+                    child: Transform.translate(
+                      offset: Offset(0, -(1 - t) * size * 0.3),
+                      child: Transform.scale(
+                        scale: 0.85 + 0.15 * t,
+                        child: child,
                       ),
-              ),
+                    ),
+                  ),
+                  child: SuspectAvatar(
+                    rosterIndex: p.cast[person],
+                    size: size * 0.7,
+                    isVictim: person == p.victim,
+                    ring: ring,
+                  ),
+                ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+class _RevealPainter extends CustomPainter {
+  _RevealPainter({
+    required this.board,
+    required this.room,
+    required this.t,
+    required this.dim,
+    required this.outline,
+  });
+
+  final Board board;
+  final int room;
+  final double t;
+  final Color dim;
+  final Color outline;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = board.size;
+    final cell = size.width / n;
+    final shade = Paint()..color = dim.withValues(alpha: 0.72 * t);
+    final line = Paint()
+      ..color = outline.withValues(alpha: t)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.square;
+    for (var i = 0; i < board.cellCount; i++) {
+      final x = board.col(i) * cell, y = board.row(i) * cell;
+      if (board.roomOf[i] != room) {
+        canvas.drawRect(Rect.fromLTWH(x, y, cell, cell), shade);
+        continue;
+      }
+      // Outline the room: every side that borders another room or the edge.
+      bool other(int r, int c) =>
+          r < 0 || c < 0 || r >= n || c >= n || board.roomOf[r * n + c] != room;
+      final r = board.row(i), c = board.col(i);
+      if (other(r - 1, c)) {
+        canvas.drawLine(Offset(x, y), Offset(x + cell, y), line);
+      }
+      if (other(r + 1, c)) {
+        canvas.drawLine(Offset(x, y + cell), Offset(x + cell, y + cell), line);
+      }
+      if (other(r, c - 1)) {
+        canvas.drawLine(Offset(x, y), Offset(x, y + cell), line);
+      }
+      if (other(r, c + 1)) {
+        canvas.drawLine(Offset(x + cell, y), Offset(x + cell, y + cell), line);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_RevealPainter old) =>
+      old.t != t ||
+      old.room != room ||
+      old.dim != dim ||
+      old.outline != outline;
 }
 
 class _BoardPainter extends CustomPainter {

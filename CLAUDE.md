@@ -38,4 +38,4 @@ CI (`.github/workflows/ci.yml`) checks formatting (`dart format lib test`), runs
 - Text contrast ≥ 4.5:1 in both themes; check new colors in light **and** dark.
 - Furniture ink (`blockedIcon`, `seat`) keeps ≥ 3:1 on every room tint, floor pattern and taken shade: `test/furniture_test.dart` checks it, so a new tint or ink must pass there.
 - No emoji as icons; Material icons only. Never rely on color alone (rooms have thick walls + legend; people have initials).
-- Respect `MediaQuery.disableAnimations`.
+- Motion: use the tokens in `Motion` (`lib/theme/app_theme.dart`) and always `Motion.of(context, d)`, which is zero under reduced motion (`MediaQuery.disableAnimations`). Transform/opacity only, never block input, and game state never waits on an animation. Current animations: suspect drop (`TweenAnimationBuilder` keyed by person@square), board shake on a wrong check (`_shake` in `game_screen.dart`), final reveal (`_RevealPainter` dims other rooms and outlines the crime scene; the case-closed dialog waits `reveal + revealHold`). `test/motion_test.dart` covers both modes.

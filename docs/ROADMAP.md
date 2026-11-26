@@ -23,7 +23,7 @@ search before designing, run its pre-delivery checklist before committing.
       grass, stone) and hand-painted vector furniture instead of Material icons.
       Re-check contrast in light and dark.
 - [x] 6. Original vector portraits for the 8 characters, keeping the initial.
-- [ ] 7. Meaningful motion (respecting `disableAnimations`): suspect drops
+- [x] 7. Meaningful motion (respecting `disableAnimations`): suspect drops
       into place, board shakes on a wrong check, final reveal lights up the
       victim's room and the culprit.
 
