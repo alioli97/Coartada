@@ -28,7 +28,9 @@ class BoardView extends StatelessWidget {
   final Strings strings;
   final void Function(int cell) onTap;
 
-  static const _label = 22.0;
+  /// Width of the row/column label strip. Kept small so 7×7 squares stay
+  /// ≥ 48dp on a 375px-wide phone (see test/board_size_test.dart).
+  static const _label = 18.0;
 
   @override
   Widget build(BuildContext context) {

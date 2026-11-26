@@ -34,7 +34,7 @@ CI (`.github/workflows/ci.yml`) checks formatting (`dart format lib test`), runs
 
 ## UI rules (from UI UX Pro Max checklist)
 
-- Touch targets ≥ 48dp (board cells are ~46dp on a 7×7 board at 375px wide; don't make them smaller).
+- Touch targets ≥ 48dp. Board squares are ~48.7dp on a 7×7 board at 375px wide (18dp label strip, 8dp board gutter while other content keeps 16dp via `_gutter`); `test/board_size_test.dart` guards it for every level.
 - Text contrast ≥ 4.5:1 in both themes; check new colors in light **and** dark.
 - No emoji as icons; Material icons only. Never rely on color alone (rooms have thick walls + legend; people have initials).
 - Respect `MediaQuery.disableAnimations`.

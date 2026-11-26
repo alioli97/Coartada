@@ -276,10 +276,12 @@ class _GameScreenState extends State<GameScreen> {
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 560),
+                // The board gets an 8dp gutter (so 7×7 squares reach 48dp at
+                // 375px wide); everything else keeps 16dp.
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
                   children: [
-                    _Briefing(puzzle: p, strings: s),
+                    _gutter(_Briefing(puzzle: p, strings: s)),
                     const SizedBox(height: 16),
                     Center(
                       child: BoardView(
@@ -289,20 +291,22 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _Inspector(game: game, strings: s),
+                    _gutter(_Inspector(game: game, strings: s)),
                     const SizedBox(height: 8),
-                    _RoomLegend(board: p.board, strings: s),
+                    _gutter(_RoomLegend(board: p.board, strings: s)),
                     const SizedBox(height: 20),
-                    _SectionTitle(s.suspects),
-                    _SuspectTray(game: game, strings: s),
+                    _gutter(_SectionTitle(s.suspects)),
+                    _gutter(_SuspectTray(game: game, strings: s)),
                     const SizedBox(height: 20),
-                    _SectionTitle(s.clues),
+                    _gutter(_SectionTitle(s.clues)),
                     for (var i = 0; i < p.clues.length; i++)
-                      _ClueTile(
-                        text: s.clue(p.clues[i], p),
-                        rosterIndex: p.cast[p.clues[i].subject],
-                        done: game.doneClues.contains(i),
-                        onTap: () => game.toggleClue(i),
+                      _gutter(
+                        _ClueTile(
+                          text: s.clue(p.clues[i], p),
+                          rosterIndex: p.cast[p.clues[i].subject],
+                          done: game.doneClues.contains(i),
+                          onTap: () => game.toggleClue(i),
+                        ),
                       ),
                   ],
                 ),
@@ -323,6 +327,10 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 }
+
+/// Extra 8dp each side, on top of the list's 8dp: 16dp for non-board content.
+Widget _gutter(Widget child) =>
+    Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: child);
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);

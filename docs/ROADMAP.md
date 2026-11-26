@@ -10,7 +10,7 @@ search before designing, run its pre-delivery checklist before committing.
 - [x] 1. Save and resume the game in progress (`GameController` to/from JSON;
       the case is regenerated from its seed; "Continue" card on home; save on
       every change and when the app goes to the background, clock paused).
-- [ ] 2. Board squares ≥ 48dp on a 7×7 board at 375px wide (smaller label
+- [x] 2. Board squares ≥ 48dp on a 7×7 board at 375px wide (smaller label
       gutter, board uses the full width), with a widget test measuring them.
 - [ ] 3. Game settings: vibration on/off and "visual help" on/off (shading of
       taken rows/columns and conflict rings).
