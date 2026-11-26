@@ -349,7 +349,10 @@ class _GameScreenState extends State<GameScreen>
                       _gutter(
                         _ClueTile(
                           text: s.clue(p.clues[i], p),
-                          rosterIndex: p.cast[p.clues[i].subject],
+                          // Clues about nobody in particular get no face.
+                          rosterIndex: p.clues[i].isGlobal
+                              ? null
+                              : p.cast[p.clues[i].subject],
                           done: game.doneClues.contains(i),
                           highlighted: switch (game.activeHint) {
                             DeductionHint(:final deduction) =>
@@ -639,7 +642,7 @@ class _ClueTile extends StatelessWidget {
     this.highlighted = false,
   });
   final String text;
-  final int rosterIndex;
+  final int? rosterIndex;
   final bool done;
 
   /// Used by the current hint's deduction.
@@ -676,10 +679,18 @@ class _ClueTile extends StatelessWidget {
                 children: [
                   Opacity(
                     opacity: done ? 0.4 : 1,
-                    child: SuspectAvatar(
-                      rosterIndex: rosterIndex,
-                      size: minAvatarSize,
-                    ),
+                    child: rosterIndex == null
+                        ? SizedBox.square(
+                            dimension: minAvatarSize,
+                            child: Icon(
+                              Icons.door_front_door_outlined,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          )
+                        : SuspectAvatar(
+                            rosterIndex: rosterIndex!,
+                            size: minAvatarSize,
+                          ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

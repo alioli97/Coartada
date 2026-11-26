@@ -16,7 +16,7 @@ int countSolutions(
 }) {
   final n = people;
   final candidates = List.generate(n, (p) {
-    final unary = clues.where((c) => c.subject == p && c.other == null);
+    final unary = clues.where((c) => c.appliesTo(p) && c.other == null);
     return [
       for (var cell = 0; cell < board.cellCount; cell++)
         if (board.standable(cell) && unary.every((c) => c.allows(board, cell)))

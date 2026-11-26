@@ -313,8 +313,10 @@ class Strings {
     Furniture.none => '',
   };
 
+  static String _upper(String t) => t[0].toUpperCase() + t.substring(1);
+
   String clue(Clue c, Puzzle p) {
-    final s = p.name(c.subject);
+    final s = c.isGlobal ? '' : p.name(c.subject);
     final rooms = p.board.rooms;
     return switch (c) {
       InRoom(:final room) => _tr(
@@ -366,6 +368,33 @@ class Strings {
         '$s y ${p.name(otherPerson)} estaban en la misma habitación.',
         '$s i ${p.name(otherPerson)} eren a la mateixa habitació.',
         '$s and ${p.name(otherPerson)} were in the same room.',
+      ),
+      InCorner() => _tr(
+        '$s estaba en una esquina de la casa.',
+        '$s era en un racó de la casa.',
+        '$s was in a corner of the house.',
+      ),
+      ByOuterWall() => _tr(
+        '$s estaba junto a una pared exterior.',
+        '$s era al costat d\'una paret exterior.',
+        '$s was against an outer wall.',
+      ),
+      NobodyInRoom(:final room) => _upper(
+        _tr(
+          'nadie estaba ${inRoom(rooms[room])}.',
+          'ningú no era ${inRoom(rooms[room])}.',
+          'nobody was ${inRoom(rooms[room])}.',
+        ),
+      ),
+      DifferentRoom(:final otherPerson) => _tr(
+        '$s y ${p.name(otherPerson)} estaban en habitaciones distintas.',
+        '$s i ${p.name(otherPerson)} eren a habitacions diferents.',
+        '$s and ${p.name(otherPerson)} were in different rooms.',
+      ),
+      SameDiagonal(:final otherPerson) => _tr(
+        '$s y ${p.name(otherPerson)} estaban en la misma diagonal.',
+        '$s i ${p.name(otherPerson)} eren a la mateixa diagonal.',
+        '$s and ${p.name(otherPerson)} were on the same diagonal.',
       ),
     };
   }

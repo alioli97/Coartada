@@ -62,6 +62,7 @@ void main() {
     expect(GameController.fromJson({...json, 'v': 99}), isNull);
     // Saves from the previous generator would rebuild another case.
     expect(GameController.fromJson({...json, 'v': 1}), isNull);
+    expect(GameController.fromJson({...json, 'v': 2}), isNull);
     expect(
       GameController.fromJson({
         ...json,
@@ -94,6 +95,9 @@ void main() {
     expect(info.placed, g.placedCount);
     expect(info.people, 5);
     app.clearSavedGame();
+    expect(app.savedGame, isNull);
+    // A save from an older version isn't offered.
+    app.saveGame({...g.toJson(), 'v': 1});
     expect(app.savedGame, isNull);
   });
 

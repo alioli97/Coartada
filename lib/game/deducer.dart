@@ -111,7 +111,7 @@ class Deducer {
       };
       for (var i = 0; i < puzzle.clues.length; i++) {
         final clue = puzzle.clues[i];
-        if (clue.subject != p || clue.other != null) continue;
+        if (!clue.appliesTo(p) || clue.other != null) continue;
         final before = cells.length;
         cells.removeWhere((c) => !clue.allows(_b, c));
         if (cells.length < before) {

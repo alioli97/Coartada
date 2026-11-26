@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../game/game_controller.dart';
 import '../game/model.dart';
 import 'strings.dart';
 
@@ -95,7 +96,8 @@ class AppState extends ChangeNotifier {
   /// Summary for the home "Continue" card, read without regenerating the case.
   SavedGameInfo? get savedGame {
     final j = savedGameJson;
-    if (j == null) return null;
+    // A save from another version can't be resumed: don't offer it.
+    if (j == null || j['v'] != GameController.saveVersion) return null;
     try {
       return SavedGameInfo(
         level: Level.values.byName(j['level'] as String),

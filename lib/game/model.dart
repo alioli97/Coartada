@@ -112,6 +112,13 @@ sealed class Clue {
   /// The second person of a two-person clue.
   int? get other => null;
 
+  /// Whether this one-person clue limits [person]'s square. A clue about
+  /// everyone ([NobodyInRoom]) applies to all.
+  bool appliesTo(int person) => subject == person;
+
+  /// Whether the clue is about nobody in particular.
+  bool get isGlobal => false;
+
   /// Whether the subject may stand on [cell] (one-person clues).
   bool allows(Board b, int cell) => true;
 
@@ -197,6 +204,67 @@ class SameRoom extends Clue {
   @override
   bool allowsPair(Board b, int subjectCell, int otherCell) =>
       b.roomOf[subjectCell] == b.roomOf[otherCell];
+}
+
+/// In one of the house's four corners.
+class InCorner extends Clue {
+  const InCorner(super.subject);
+  @override
+  bool allows(Board b, int cell) {
+    final last = b.size - 1;
+    return (b.row(cell) == 0 || b.row(cell) == last) &&
+        (b.col(cell) == 0 || b.col(cell) == last);
+  }
+}
+
+/// On the edge of the house (against an outer wall).
+class ByOuterWall extends Clue {
+  const ByOuterWall(super.subject);
+  @override
+  bool allows(Board b, int cell) {
+    final last = b.size - 1;
+    return b.row(cell) == 0 ||
+        b.row(cell) == last ||
+        b.col(cell) == 0 ||
+        b.col(cell) == last;
+  }
+}
+
+/// Nobody at all was in [room]. Applies to everyone.
+class NobodyInRoom extends Clue {
+  const NobodyInRoom(this.room) : super(-1);
+  final int room;
+  @override
+  bool appliesTo(int person) => true;
+  @override
+  bool get isGlobal => true;
+  @override
+  bool allows(Board b, int cell) => b.roomOf[cell] != room;
+  @override
+  bool holds(Board b, List<int> positions) =>
+      positions.every((c) => allows(b, c));
+}
+
+class DifferentRoom extends Clue {
+  const DifferentRoom(super.subject, this.otherPerson);
+  final int otherPerson;
+  @override
+  int get other => otherPerson;
+  @override
+  bool allowsPair(Board b, int subjectCell, int otherCell) =>
+      b.roomOf[subjectCell] != b.roomOf[otherCell];
+}
+
+/// On the same diagonal (row and column differ by the same amount).
+class SameDiagonal extends Clue {
+  const SameDiagonal(super.subject, this.otherPerson);
+  final int otherPerson;
+  @override
+  int get other => otherPerson;
+  @override
+  bool allowsPair(Board b, int subjectCell, int otherCell) =>
+      (b.row(subjectCell) - b.row(otherCell)).abs() ==
+      (b.col(subjectCell) - b.col(otherCell)).abs();
 }
 
 /// A generated case with a unique solution.

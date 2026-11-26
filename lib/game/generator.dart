@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'deducer.dart';
 import 'model.dart';
-import 'solver.dart';
 
 /// Builds a random case with exactly one solution. Same arguments, same case.
 Puzzle generatePuzzle({
@@ -26,18 +25,38 @@ const _weights = {
   Level.apprentice: {
     InRow: 3.0, InColumn: 3.0, InRoom: 3.0, OnFurniture: 2.0, NextTo: 1.0, //
     NotInRoom: 1.0, NorthOf: 1.0, WestOf: 1.0, SameRoom: 1.0,
+    InCorner: 1.5,
+    ByOuterWall: 1.5,
+    NobodyInRoom: 1.5,
+    DifferentRoom: 0.5,
+    SameDiagonal: 0.5,
   },
   Level.detective: {
     InRow: 2.0, InColumn: 2.0, InRoom: 3.0, OnFurniture: 2.0, NextTo: 2.0, //
     NotInRoom: 2.0, NorthOf: 2.0, WestOf: 2.0, SameRoom: 2.0,
+    InCorner: 1.5,
+    ByOuterWall: 1.5,
+    NobodyInRoom: 1.5,
+    DifferentRoom: 1.0,
+    SameDiagonal: 1.0,
   },
   Level.inspector: {
     InRow: 1.0, InColumn: 1.0, InRoom: 2.0, OnFurniture: 2.0, NextTo: 3.0, //
     NotInRoom: 3.0, NorthOf: 3.0, WestOf: 3.0, SameRoom: 2.0,
+    InCorner: 1.5,
+    ByOuterWall: 1.5,
+    NobodyInRoom: 1.5,
+    DifferentRoom: 1.5,
+    SameDiagonal: 1.5,
   },
   Level.commissioner: {
     InRow: 0.4, InColumn: 0.4, InRoom: 2.0, OnFurniture: 2.0, NextTo: 3.0, //
     NotInRoom: 3.0, NorthOf: 3.0, WestOf: 3.0, SameRoom: 2.0,
+    InCorner: 1.5,
+    ByOuterWall: 1.5,
+    NobodyInRoom: 1.5,
+    DifferentRoom: 2.0,
+    SameDiagonal: 2.0,
   },
 };
 
@@ -116,14 +135,15 @@ Puzzle? _tryGenerate(Level level, Variant variant, Random rng, int seed) {
   ]..sort((a, b) => a.$2.compareTo(b.$2));
   final ordered = [for (final k in keyed) k.$1];
 
-  // A clue set is good when it has one solution AND a person can reach it by
-  // reasoning (the Deducer's techniques), never by trial and error.
+  // A clue set is good when a person can reason the whole solution out (the
+  // Deducer's techniques), never by trial and error. Since the Deducer only
+  // rules out what the rules forbid, reaching one square per person also
+  // proves the solution is unique (tests double-check with the solver).
   bool good(List<Clue> clues) {
-    if (countSolutions(board, n, victim!, clues) != 1) return false;
     final draft = Puzzle(
       board: board,
       cast: List.generate(n, (i) => i),
-      victim: victim,
+      victim: victim!,
       culprit: culprit!,
       solution: cells,
       clues: clues,
@@ -158,8 +178,13 @@ Puzzle? _tryGenerate(Level level, Variant variant, Random rng, int seed) {
   chosen.addAll(removed.take(_spare[level]!));
 
   // Grouped by person, victim first, so the list reads like witness reports.
-  int rank(int p) => p == victim ? -1 : p;
-  chosen.sort((a, b) => rank(a.subject).compareTo(rank(b.subject)));
+  // Clues about nobody in particular go last.
+  int rank(Clue c) => c.isGlobal
+      ? 1 << 20
+      : c.subject == victim
+      ? -1
+      : c.subject;
+  chosen.sort((a, b) => rank(a).compareTo(rank(b)));
 
   final cast = List.generate(roster.length, (i) => i)..shuffle(rng);
   return Puzzle(
@@ -246,6 +271,9 @@ List<Clue> _cluePool(Board b, List<int> cells, int victim, Random rng) {
       pool.add(NotInRoom(p, r));
     }
     if (b.furniture[cell].isSeat) pool.add(OnFurniture(p, b.furniture[cell]));
+    final corner = InCorner(p), wall = ByOuterWall(p);
+    if (corner.allows(b, cell)) pool.add(corner);
+    if (wall.allows(b, cell)) pool.add(wall);
     for (final f in {for (final nb in b.neighbours(cell)) b.furniture[nb]}) {
       if (f.blocks || f == Furniture.chair) pool.add(NextTo(p, f));
     }
@@ -253,6 +281,15 @@ List<Clue> _cluePool(Board b, List<int> cells, int victim, Random rng) {
       if (q == p) continue;
       if (b.row(cell) < b.row(cells[q])) pool.add(NorthOf(p, q));
       if (b.col(cell) < b.col(cells[q])) pool.add(WestOf(p, q));
+      if (p < q) {
+        final (rp, rq) = (b.roomOf[cell], b.roomOf[cells[q]]);
+        if (rp != rq) pool.add(DifferentRoom(p, q));
+        final (dr, dc) = (
+          (b.row(cell) - b.row(cells[q])).abs(),
+          (b.col(cell) - b.col(cells[q])).abs(),
+        );
+        if (dr == dc) pool.add(SameDiagonal(p, q));
+      }
       if (p < q &&
           p != victim &&
           q != victim &&
@@ -260,6 +297,10 @@ List<Clue> _cluePool(Board b, List<int> cells, int victim, Random rng) {
         pool.add(SameRoom(p, q));
       }
     }
+  }
+  final occupiedRooms = {for (final c in cells) b.roomOf[c]};
+  for (var r = 0; r < b.rooms.length; r++) {
+    if (!occupiedRooms.contains(r)) pool.add(NobodyInRoom(r));
   }
   return pool;
 }
