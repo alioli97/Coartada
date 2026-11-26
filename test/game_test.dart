@@ -105,7 +105,8 @@ void main() {
       ),
     );
     expect(tester.takeException(), isNull);
-    for (var i = 0; i < p.people; i++) {
+    // Each person: the hint explains, asking again places them.
+    for (var i = 0; i < 2 * p.people; i++) {
       await tester.tap(find.text('Pista').last);
       await tester.pump();
     }

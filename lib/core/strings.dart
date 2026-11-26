@@ -1,3 +1,4 @@
+import '../game/deducer.dart';
 import '../game/model.dart';
 
 /// Hand-rolled translations (es, ca, en). Screens never hardcode user text.
@@ -149,6 +150,53 @@ class Strings {
   String notesLabel(List<String> names) =>
       _tr('notas: ', 'notes: ', 'notes: ') + names.join(', ');
   String get hint => _tr('Pista', 'Ajuda', 'Hint');
+  String hintMistake(String name, String at) => _tr(
+    '$name no puede estar en $at: no encaja con las pistas.',
+    '$name no pot ser a $at: no encaixa amb les pistes.',
+    '$name can\'t be on $at: it doesn\'t fit the clues.',
+  );
+  String hintReveal(String name, String at) =>
+      _tr('$name estaba en $at.', '$name era a $at.', '$name was on $at.');
+  String hintDeduction(String name, String at, Set<Reason> reasons) {
+    final why = [
+      for (final r in Reason.values)
+        if (reasons.contains(r)) _reason(r),
+    ];
+    final because = why.isEmpty
+        ? _tr('las reglas', 'les regles', 'the rules')
+        : why.length == 1
+        ? why.single
+        : '${why.sublist(0, why.length - 1).join(', ')} '
+              '${_tr('y', 'i', 'and')} ${why.last}';
+    return _tr(
+      '$name solo puede estar en $at. Se deduce de $because. Pide otra ayuda si quieres que lo coloque.',
+      '$name només pot ser a $at. Es dedueix de $because. Demana una altra ajuda si vols que el col·loqui.',
+      '$name can only be on $at. It follows from $because. Ask again if you want it placed for you.',
+    );
+  }
+
+  String _reason(Reason r) => switch (r) {
+    Reason.clues => _tr(
+      'las pistas resaltadas',
+      'les pistes destacades',
+      'the highlighted clues',
+    ),
+    Reason.occupied => _tr(
+      'las filas y columnas ocupadas',
+      'les files i columnes ocupades',
+      'the taken rows and columns',
+    ),
+    Reason.rowColumnNeeds => _tr(
+      'que cada fila y columna necesita a alguien',
+      'que cada fila i columna necessita algú',
+      'every row and column needing someone',
+    ),
+    Reason.victimRule => _tr(
+      'la regla de la víctima',
+      'la regla de la víctima',
+      'the victim rule',
+    ),
+  };
   String get check => _tr('Comprobar', 'Comprovar', 'Check');
   String get restart =>
       _tr('Empezar de nuevo', 'Tornar a començar', 'Start over');

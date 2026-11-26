@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
 
+import 'deducer.dart';
 import 'generator.dart';
 import 'model.dart';
 
@@ -231,6 +232,7 @@ class GameController extends ChangeNotifier {
   TapResult tap(int cell) {
     if (phase != Phase.placing) return TapResult.ok;
     focusedCell = cell;
+    if (_hint is RevealHint) _hint = null;
     final here = personAt(cell);
     final sel = selected;
 
@@ -332,32 +334,85 @@ class GameController extends ChangeNotifier {
     return false;
   }
 
-  /// Puts one wrongly placed (or else unplaced) person in their real spot.
-  /// Returns that person, or null when everyone is already right.
-  int? hint([Random? rng]) {
+  /// The hint on screen, if still relevant (see [activeHint]).
+  Hint? _hint;
+
+  /// Hidden once it no longer applies: a mistake once that person moves, a
+  /// deduction once the player follows it, a reveal on the next tap.
+  Hint? get activeHint => switch (_hint) {
+    MistakeHint(:final person, :final cell) when placement[person] == cell =>
+      _hint,
+    DeductionHint(:final deduction)
+        when placement[deduction.person] != deduction.cell =>
+      _hint,
+    final RevealHint h => h,
+    _ => null,
+  };
+
+  /// One step of help, gentlest first:
+  /// 1. someone is on a wrong square → point at it (don't say where to go);
+  /// 2. otherwise the next deduction, explained (asking again places it);
+  /// 3. only if no deduction is found, reveal someone.
+  /// Returns null when everyone is already right.
+  Hint? hint([Random? rng]) {
     if (phase != Phase.placing) return null;
-    final wrong = [
+    final sol = puzzle.solution;
+    for (var p = 0; p < placement.length; p++) {
+      final c = placement[p];
+      if (c != null && c != sol[p]) {
+        hints++;
+        return _show(MistakeHint(p, c));
+      }
+    }
+    if (activeHint case DeductionHint(:final deduction)) {
+      return _show(RevealHint(_place(deduction.person), sol[deduction.person]));
+    }
+    final known = {
       for (var p = 0; p < placement.length; p++)
-        if (placement[p] != null && placement[p] != puzzle.solution[p]) p,
-    ];
+        if (placement[p] != null) p: placement[p]!,
+    };
+    if (known.length == placement.length) return null;
+    final d = Deducer(puzzle, known: known).next();
+    hints++;
+    if (d != null && d.cell == sol[d.person]) return _show(DeductionHint(d));
     final missing = [
       for (var p = 0; p < placement.length; p++)
         if (placement[p] == null) p,
     ];
-    final pool = wrong.isNotEmpty ? wrong : missing;
-    if (pool.isEmpty) return null;
-    final p = pool[(rng ?? Random()).nextInt(pool.length)];
+    final p = missing[(rng ?? Random()).nextInt(missing.length)];
+    return _show(RevealHint(_place(p), sol[p]));
+  }
+
+  Hint _show(Hint h) {
+    _hint = h;
+    notifyListeners();
+    return h;
+  }
+
+  /// Puts [p] on their real square, locked. Returns [p].
+  int _place(int p) {
     _save();
     final target = puzzle.solution[p];
     final other = personAt(target);
     if (other != null) placement[other] = null;
     placement[p] = target;
     crosses.remove(target);
+    notes.remove(target);
     locked.add(p);
-    hints++;
     if (selected == p) selected = null;
-    notifyListeners();
     return p;
+  }
+
+  /// Places one missing person directly (no explanation).
+  void revealOne([Random? rng]) {
+    final missing = [
+      for (var p = 0; p < placement.length; p++)
+        if (placement[p] == null) p,
+    ];
+    if (missing.isEmpty || phase != Phase.placing) return;
+    hints++;
+    final p = missing[(rng ?? Random()).nextInt(missing.length)];
+    _show(RevealHint(_place(p), puzzle.solution[p]));
   }
 
   void restart() {
@@ -377,4 +432,29 @@ class GameController extends ChangeNotifier {
     _watch.stop();
     super.dispose();
   }
+}
+
+/// What a hint showed (kept so the screen can explain and highlight it).
+sealed class Hint {
+  const Hint();
+}
+
+/// [person] stands on [cell], and that's wrong.
+class MistakeHint extends Hint {
+  const MistakeHint(this.person, this.cell);
+  final int person;
+  final int cell;
+}
+
+/// The next thing the player can work out, with its reasons.
+class DeductionHint extends Hint {
+  const DeductionHint(this.deduction);
+  final Deduction deduction;
+}
+
+/// [person] was placed on [cell] for the player.
+class RevealHint extends Hint {
+  const RevealHint(this.person, this.cell);
+  final int person;
+  final int cell;
 }

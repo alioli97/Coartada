@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'deducer.dart';
 import 'model.dart';
 import 'solver.dart';
 
@@ -115,24 +116,41 @@ Puzzle? _tryGenerate(Level level, Variant variant, Random rng, int seed) {
   ]..sort((a, b) => a.$2.compareTo(b.$2));
   final ordered = [for (final k in keyed) k.$1];
 
-  // 6. Add clues until the case has one solution.
+  // A clue set is good when it has one solution AND a person can reach it by
+  // reasoning (the Deducer's techniques), never by trial and error.
+  bool good(List<Clue> clues) {
+    if (countSolutions(board, n, victim!, clues) != 1) return false;
+    final draft = Puzzle(
+      board: board,
+      cast: List.generate(n, (i) => i),
+      victim: victim,
+      culprit: culprit!,
+      solution: cells,
+      clues: clues,
+      seed: seed,
+      level: level,
+    );
+    return Deducer.solvesAll(draft).$1;
+  }
+
+  // 6. Add clues until the case is good.
   final chosen = <Clue>[];
-  var unique = false;
+  var solved = false;
   for (final c in ordered) {
     chosen.add(c);
     if (chosen.length < n - 1) continue;
-    if (countSolutions(board, n, victim, chosen) == 1) {
-      unique = true;
+    if (good(chosen)) {
+      solved = true;
       break;
     }
   }
-  if (!unique) return null;
+  if (!solved) return null;
 
   // 7. Drop clues that aren't needed, then keep a few spares on easy levels.
   final removed = <Clue>[];
   for (final c in [...chosen]..shuffle(rng)) {
     final without = [...chosen]..remove(c);
-    if (countSolutions(board, n, victim, without) == 1) {
+    if (good(without)) {
       chosen.remove(c);
       removed.add(c);
     }

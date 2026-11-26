@@ -103,7 +103,9 @@ void main() {
     // Open a new 4×4 case, place someone with a hint, go back.
     await tester.tap(find.text('Aprendiz'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Pista').last);
+    await tester.tap(find.text('Pista').last); // explains
+    await tester.pump();
+    await tester.tap(find.text('Pista').last); // places
     await tester.pump();
     await tester.pageBack();
     await tester.pumpAndSettle();

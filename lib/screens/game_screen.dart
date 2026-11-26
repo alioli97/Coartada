@@ -351,6 +351,11 @@ class _GameScreenState extends State<GameScreen>
                           text: s.clue(p.clues[i], p),
                           rosterIndex: p.cast[p.clues[i].subject],
                           done: game.doneClues.contains(i),
+                          highlighted: switch (game.activeHint) {
+                            DeductionHint(:final deduction) =>
+                              deduction.clues.contains(i),
+                            _ => false,
+                          },
                           onTap: () => game.toggleClue(i),
                         ),
                       ),
@@ -424,6 +429,10 @@ class _Inspector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hint = game.activeHint;
+    if (hint != null) {
+      return _HintCard(game: game, hint: hint, strings: strings);
+    }
     final cell = game.focusedCell;
     final b = game.board;
     final style = Theme.of(context).textTheme.bodyMedium
@@ -442,6 +451,67 @@ class _Inspector extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: Text(text, textAlign: TextAlign.center, style: style),
+    );
+  }
+}
+
+/// The current hint, in the same place every time (UI UX Pro Max:
+/// consistent help, one live status message).
+class _HintCard extends StatelessWidget {
+  const _HintCard({
+    required this.game,
+    required this.hint,
+    required this.strings,
+  });
+  final GameController game;
+  final Hint hint;
+  final Strings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final p = game.puzzle;
+    String at(int cell) =>
+        '${Strings.colLetter(game.board.col(cell))}${game.board.row(cell) + 1}';
+    final (icon, color, text) = switch (hint) {
+      MistakeHint(:final person, :final cell) => (
+        Icons.error_outline,
+        scheme.error,
+        strings.hintMistake(p.name(person), at(cell)),
+      ),
+      DeductionHint(:final deduction) => (
+        Icons.lightbulb_outline,
+        scheme.secondary,
+        strings.hintDeduction(
+          p.name(deduction.person),
+          at(deduction.cell),
+          deduction.reasons,
+        ),
+      ),
+      RevealHint(:final person, :final cell) => (
+        Icons.visibility_outlined,
+        scheme.primary,
+        strings.hintReveal(p.name(person), at(cell)),
+      ),
+    };
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border(left: BorderSide(color: color, width: 4)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExcludeSemantics(child: Icon(icon, color: color)),
+            const SizedBox(width: 10),
+            Expanded(child: Text(text)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -566,10 +636,14 @@ class _ClueTile extends StatelessWidget {
     required this.rosterIndex,
     required this.done,
     required this.onTap,
+    this.highlighted = false,
   });
   final String text;
   final int rosterIndex;
   final bool done;
+
+  /// Used by the current hint's deduction.
+  final bool highlighted;
   final VoidCallback onTap;
 
   @override
@@ -580,30 +654,47 @@ class _ClueTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-            child: Row(
-              children: [
-                Opacity(
-                  opacity: done ? 0.4 : 1,
-                  child: SuspectAvatar(
-                    rosterIndex: rosterIndex,
-                    size: minAvatarSize,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    text,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      decoration: done ? TextDecoration.lineThrough : null,
-                      color: done ? scheme.onSurfaceVariant : scheme.onSurface,
+        child: AnimatedContainer(
+          duration: Motion.of(context, Motion.place),
+          decoration: BoxDecoration(
+            color: highlighted
+                ? scheme.secondary.withValues(alpha: 0.16)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border(
+              left: BorderSide(
+                color: highlighted ? scheme.secondary : Colors.transparent,
+                width: 4,
+              ),
+            ),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+              child: Row(
+                children: [
+                  Opacity(
+                    opacity: done ? 0.4 : 1,
+                    child: SuspectAvatar(
+                      rosterIndex: rosterIndex,
+                      size: minAvatarSize,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        decoration: done ? TextDecoration.lineThrough : null,
+                        color: done
+                            ? scheme.onSurfaceVariant
+                            : scheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -30,9 +30,11 @@ search before designing, run its pre-delivery checklist before committing.
 ## C. Gameplay
 
 - [x] 8. Pencil notes: small candidate initials per square (saved, undoable).
-- [ ] 9. Reasoning hints: `lib/game/deducer.dart` with human techniques; the
+- [x] 9. Reasoning hints: `lib/game/deducer.dart` with human techniques; the
       hint explains one deduction and highlights the squares, and only reveals
-      a person when no deduction is found. Grade case difficulty by technique.
+      a person when no deduction is found. The generator now only accepts
+      cases the deducer can solve (no trial and error). Grading difficulty by
+      technique is left for later.
 - [ ] 10. New clue types: in a corner, by the outer wall, in a different room
       from…, nobody was in room X, on the same diagonal as… (still unique).
 - [ ] 11. 8×8 "Legend" level with zoom (`InteractiveViewer`); generator under

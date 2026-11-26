@@ -37,6 +37,9 @@ void main() {
     tester,
   ) async {
     await open(tester, reduce: true);
+    // First hint explains, the second places someone.
+    await tester.tap(find.text('Pista').last);
+    await tester.pump();
     await tester.tap(find.text('Pista').last);
     await tester.pump();
     // (The tap ripple still runs; the drop itself must already be done.)
@@ -52,6 +55,9 @@ void main() {
 
   testWidgets('with motion, the drop animates', (tester) async {
     await open(tester, reduce: false);
+    // First hint explains, the second places someone.
+    await tester.tap(find.text('Pista').last);
+    await tester.pump();
     await tester.tap(find.text('Pista').last);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
@@ -69,7 +75,8 @@ void main() {
     tester,
   ) async {
     final p = await open(tester, reduce: true);
-    for (var i = 0; i < p.people; i++) {
+    // Each person: the hint explains, asking again places them.
+    for (var i = 0; i < 2 * p.people; i++) {
       await tester.tap(find.text('Pista').last);
       await tester.pump();
     }

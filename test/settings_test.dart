@@ -104,8 +104,13 @@ void main() {
       await tester.pump();
       expect(vibrations, isEmpty); // incomplete: no vibration
 
-      // Hints fix everyone, then accuse the wrong person: vibrates.
-      for (var i = 0; i < p.people; i++) {
+      // Undo the clash (a misplaced person gets a "mistake" hint first),
+      // then hints place everyone.
+      await tester.tap(find.text('Deshacer'));
+      await tester.pump();
+      await tester.tap(find.text('Deshacer'));
+      await tester.pump();
+      for (var i = 0; i < 2 * p.people; i++) {
         await tester.tap(find.text('Pista').last);
         await tester.pump();
       }

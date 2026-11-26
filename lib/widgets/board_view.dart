@@ -171,6 +171,13 @@ class _Cell extends StatelessWidget {
     final person = c.personAt(index);
     final scheme = Theme.of(context).colorScheme;
     final crossed = c.crosses.contains(index);
+    final highlight = switch (c.activeHint) {
+      MistakeHint(:final cell) when cell == index => scheme.error,
+      DeductionHint(:final deduction) when deduction.cell == index =>
+        scheme.secondary,
+      RevealHint(:final cell) when cell == index => scheme.primary,
+      _ => null,
+    };
     final marks = person == null && !crossed
         ? (c.notesAt(index).toList()..sort())
         : const <int>[];
@@ -215,6 +222,16 @@ class _Cell extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
+              if (highlight != null)
+                // The square the current hint is about.
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: highlight.withValues(alpha: 0.18),
+                      border: Border.all(color: highlight, width: 3),
+                    ),
+                  ),
+                ),
               // A rug is floor: it stays full size under whoever stands on
               // it. A chair shrinks to a corner badge when occupied.
               // Furniture fades behind pencil marks so they stay legible.
