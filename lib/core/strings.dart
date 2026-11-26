@@ -38,7 +38,9 @@ class Strings {
     Level.inspector => _tr('Inspector', 'Inspector', 'Inspector'),
     Level.commissioner => _tr('Comisario', 'Comissari', 'Superintendent'),
   };
-  String solvedCount(int n) => _tr('$n resueltos', '$n resolts', '$n solved');
+  String solvedCount(int n) => n == 1
+      ? _tr('1 resuelto', '1 resolt', '1 solved')
+      : _tr('$n resueltos', '$n resolts', '$n solved');
   String best(String time) => _tr('Mejor $time', 'Millor $time', 'Best $time');
   String get noTouchTitle =>
       _tr('Variante Sin roces', 'Variant Sense tocar-se', 'No-touch variant');
