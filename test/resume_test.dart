@@ -60,6 +60,8 @@ void main() {
   test('bad or foreign save data is rejected, not crashed on', () {
     final json = _played().toJson();
     expect(GameController.fromJson({...json, 'v': 99}), isNull);
+    // Saves from the previous generator would rebuild another case.
+    expect(GameController.fromJson({...json, 'v': 1}), isNull);
     expect(
       GameController.fromJson({
         ...json,

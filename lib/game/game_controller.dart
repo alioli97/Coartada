@@ -79,7 +79,10 @@ class GameController extends ChangeNotifier {
     }
   }
 
-  static const saveVersion = 1;
+  /// Bump when the save format changes **or when the generator changes**:
+  /// a save only stores the seed, so a new generator would rebuild a
+  /// different case under the old marks. 2: deducible-only generator.
+  static const saveVersion = 2;
 
   /// The player's progress, enough to resume with [fromJson].
   Map<String, dynamic> toJson() => {
