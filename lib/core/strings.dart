@@ -54,6 +54,19 @@ class Strings {
   String get themeSystem => _tr('Sistema', 'Sistema', 'System');
   String get themeLight => _tr('Claro', 'Clar', 'Light');
   String get themeDark => _tr('Oscuro', 'Fosc', 'Dark');
+  String get gameSettings => _tr('Juego', 'Joc', 'Game');
+  String get haptics => _tr('Vibración', 'Vibració', 'Vibration');
+  String get hapticsBody => _tr(
+    'Al comprobar, acusar y pedir ayuda.',
+    'En comprovar, acusar i demanar ajuda.',
+    'When checking, accusing and using a hint.',
+  );
+  String get visualHelp => _tr('Ayuda visual', 'Ajuda visual', 'Visual help');
+  String get visualHelpBody => _tr(
+    'Sombrea filas y columnas ocupadas y marca en rojo a quien choca. Desactívala para más reto.',
+    'Ombreja files i columnes ocupades i marca en vermell qui xoca. Desactiva-la per a més repte.',
+    'Shades taken rows and columns and rings clashing people in red. Turn it off for more challenge.',
+  );
 
   // How to play
   String get rulesTitle => _tr('Las reglas', 'Les regles', 'The rules');

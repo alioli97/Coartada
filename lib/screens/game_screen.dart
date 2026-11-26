@@ -11,6 +11,7 @@ import '../game/generator.dart';
 import '../game/model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/board_view.dart';
+import '../widgets/settings_sheet.dart';
 import '../widgets/suspect_avatar.dart';
 import 'how_to_play_screen.dart';
 
@@ -97,6 +98,11 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
+  /// Vibrates only when the player keeps vibration on.
+  void _haptic(Future<void> Function() feedback) {
+    if (widget.appState.haptics) feedback();
+  }
+
   void _snack(String text) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -117,10 +123,10 @@ class _GameScreenState extends State<GameScreen> {
       case CheckResult.incomplete:
         _snack(game.conflicts.isNotEmpty ? s.conflict : s.incomplete);
       case CheckResult.wrong:
-        HapticFeedback.heavyImpact();
+        _haptic(HapticFeedback.heavyImpact);
         _snack(game.conflicts.isNotEmpty ? s.conflict : s.wrong);
       case CheckResult.correct:
-        HapticFeedback.mediumImpact();
+        _haptic(HapticFeedback.mediumImpact);
         await _accuse();
     }
   }
@@ -159,11 +165,11 @@ class _GameScreenState extends State<GameScreen> {
       );
       if (pick == null || !mounted) return; // closed: can reopen with Check
       if (game.accuse(pick)) {
-        HapticFeedback.mediumImpact();
+        _haptic(HapticFeedback.mediumImpact);
         widget.appState.recordSolved(p, game.elapsed, daily: game.daily);
         await _showSolved();
       } else {
-        HapticFeedback.heavyImpact();
+        _haptic(HapticFeedback.heavyImpact);
         _snack(s.wrongAccusation);
       }
     }
@@ -230,7 +236,8 @@ class _GameScreenState extends State<GameScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return ListenableBuilder(
-      listenable: game,
+      // Settings (language, visual help) can change from the ⋮ menu.
+      listenable: Listenable.merge([game, widget.appState]),
       // Save on pop, before the home screen refreshes (dispose runs only
       // after the exit animation).
       builder: (context, _) => PopScope<Object?>(
@@ -267,6 +274,10 @@ class _GameScreenState extends State<GameScreen> {
               PopupMenuButton<void>(
                 itemBuilder: (_) => [
                   PopupMenuItem(onTap: game.restart, child: Text(s.restart)),
+                  PopupMenuItem(
+                    onTap: () => showSettingsSheet(context, widget.appState),
+                    child: Text(s.settings),
+                  ),
                 ],
               ),
             ],
@@ -288,6 +299,7 @@ class _GameScreenState extends State<GameScreen> {
                         controller: game,
                         strings: s,
                         onTap: _onTap,
+                        visualHelp: widget.appState.visualHelp,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -319,7 +331,7 @@ class _GameScreenState extends State<GameScreen> {
             onCheck: _check,
             onHint: () {
               final who = game.hint();
-              if (who != null) HapticFeedback.selectionClick();
+              if (who != null) _haptic(HapticFeedback.selectionClick);
             },
           ),
         ),

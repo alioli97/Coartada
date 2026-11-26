@@ -22,11 +22,15 @@ class BoardView extends StatelessWidget {
     required this.controller,
     required this.strings,
     required this.onTap,
+    this.visualHelp = true,
   });
 
   final GameController controller;
   final Strings strings;
   final void Function(int cell) onTap;
+
+  /// Shade taken rows/columns and ring clashing people (a setting).
+  final bool visualHelp;
 
   /// Width of the row/column label strip. Kept small so 7×7 squares stay
   /// ≥ 48dp on a 375px-wide phone (see test/board_size_test.dart).
@@ -41,8 +45,9 @@ class BoardView extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final labelStyle = Theme.of(context).textTheme.labelMedium
         ?.copyWith(color: scheme.onSurfaceVariant, fontWeight: FontWeight.w600);
-    final conflicts = c.conflicts;
-    final takenRows = c.takenRows, takenCols = c.takenCols;
+    final conflicts = visualHelp ? c.conflicts : const <int>{};
+    final takenRows = visualHelp ? c.takenRows : const <int>{};
+    final takenCols = visualHelp ? c.takenCols : const <int>{};
     final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     return LayoutBuilder(

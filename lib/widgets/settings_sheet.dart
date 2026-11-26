@@ -7,13 +7,15 @@ Future<void> showSettingsSheet(BuildContext context, AppState appState) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
+    // Taller than half the screen on small phones: let it grow and scroll.
+    isScrollControlled: true,
     builder: (context) => ListenableBuilder(
       listenable: appState,
       builder: (context, _) {
         final s = appState.s;
         final text = Theme.of(context).textTheme;
         return SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -56,6 +58,24 @@ Future<void> showSettingsSheet(BuildContext context, AppState appState) {
                   ],
                   selected: {appState.themeMode},
                   onSelectionChanged: (v) => appState.themeMode = v.single,
+                ),
+                const SizedBox(height: 20),
+                Text(s.gameSettings, style: text.titleMedium),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: const Icon(Icons.vibration),
+                  title: Text(s.haptics),
+                  subtitle: Text(s.hapticsBody),
+                  value: appState.haptics,
+                  onChanged: (on) => appState.haptics = on,
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: const Icon(Icons.grid_on),
+                  title: Text(s.visualHelp),
+                  subtitle: Text(s.visualHelpBody),
+                  value: appState.visualHelp,
+                  onChanged: (on) => appState.visualHelp = on,
                 ),
               ],
             ),

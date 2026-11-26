@@ -12,7 +12,7 @@ search before designing, run its pre-delivery checklist before committing.
       every change and when the app goes to the background, clock paused).
 - [x] 2. Board squares ≥ 48dp on a 7×7 board at 375px wide (smaller label
       gutter, board uses the full width), with a widget test measuring them.
-- [ ] 3. Game settings: vibration on/off and "visual help" on/off (shading of
+- [x] 3. Game settings: vibration on/off and "visual help" on/off (shading of
       taken rows/columns and conflict rings).
 
 ## B. Visual upgrade

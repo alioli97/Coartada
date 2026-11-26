@@ -34,6 +34,8 @@ class AppState extends ChangeNotifier {
   static const _kStats = 'stats';
   static const _kDaily = 'daily_solved';
   static const _kSavedGame = 'saved_game';
+  static const _kHaptics = 'haptics';
+  static const _kVisualHelp = 'visual_help';
 
   final SharedPreferences _prefs;
   late String _language;
@@ -55,6 +57,21 @@ class AppState extends ChangeNotifier {
   set themeMode(ThemeMode mode) {
     _themeMode = mode;
     _prefs.setString(_kTheme, mode.name);
+    notifyListeners();
+  }
+
+  /// Vibration on check, accusation and hint. On by default.
+  bool get haptics => _prefs.getBool(_kHaptics) ?? true;
+  set haptics(bool on) {
+    _prefs.setBool(_kHaptics, on);
+    notifyListeners();
+  }
+
+  /// Board aids: shading of taken rows/columns and rings on people who
+  /// clash. On by default; off for a harder game.
+  bool get visualHelp => _prefs.getBool(_kVisualHelp) ?? true;
+  set visualHelp(bool on) {
+    _prefs.setBool(_kVisualHelp, on);
     notifyListeners();
   }
 
