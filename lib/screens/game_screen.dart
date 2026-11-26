@@ -623,8 +623,15 @@ class _ActionBar extends StatelessWidget {
                 flex: 2,
                 child: FilledButton.icon(
                   onPressed: game.phase == Phase.solved ? null : onCheck,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
                   icon: const Icon(Icons.gavel),
-                  label: Text(strings.check),
+                  // One line always: shrink rather than wrap a long word.
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(strings.check, maxLines: 1, softWrap: false),
+                  ),
                 ),
               ),
             ],

@@ -2,11 +2,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/app_state.dart';
+import 'core/font_licenses.dart';
 import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerFontLicenses();
   final prefs = await SharedPreferences.getInstance();
   runApp(CoartadaApp(appState: AppState(prefs)));
 }

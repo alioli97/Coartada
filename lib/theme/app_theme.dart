@@ -6,6 +6,10 @@ import 'package:material_ui/material_ui.dart';
 /// Dark primary is lightened to #4ADE80 so green text keeps 4.5:1 contrast.
 /// Widgets read colors from [Theme] / [GameColors], never raw hex.
 class AppTheme {
+  /// Bundled font families (see pubspec.yaml, assets/fonts/).
+  static const headingFont = 'PlayfairDisplay';
+  static const bodyFont = 'SourceSerif4';
+
   static const _green = Color(0xFF15803D);
   static const _gold = Color(0xFFD97706);
 
@@ -60,23 +64,35 @@ class AppTheme {
       brightness: brightness,
       colorScheme: scheme,
       useMaterial3: true,
+      fontFamily: bodyFont,
     );
     final text = base.textTheme.apply(
       bodyColor: scheme.onSurface,
       displayColor: scheme.onSurface,
     );
+    TextStyle? heading(TextStyle? s, FontWeight w) =>
+        s?.copyWith(fontFamily: headingFont, fontWeight: w);
     return base.copyWith(
       scaffoldBackgroundColor: scheme.surface,
       extensions: [game],
+      // "Minimalist Monochrome Editorial" pairing (UI UX Pro Max):
+      // Playfair Display for headings, Source Serif 4 for everything else.
       textTheme: text.copyWith(
-        displaySmall: text.displaySmall?.copyWith(
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.5,
-        ),
-        headlineSmall: text.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
+        displayLarge: heading(text.displayLarge, FontWeight.w800),
+        displayMedium: heading(text.displayMedium, FontWeight.w800),
+        displaySmall: heading(
+          text.displaySmall,
+          FontWeight.w800,
+        )?.copyWith(letterSpacing: -0.5),
+        headlineLarge: heading(text.headlineLarge, FontWeight.w700),
+        headlineMedium: heading(text.headlineMedium, FontWeight.w700),
+        headlineSmall: heading(text.headlineSmall, FontWeight.w700),
+        titleLarge: heading(text.titleLarge, FontWeight.w700),
         titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        titleSmall: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+        labelMedium: text.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+        labelSmall: text.labelSmall?.copyWith(fontWeight: FontWeight.w600),
         bodyLarge: text.bodyLarge?.copyWith(height: 1.5),
         bodyMedium: text.bodyMedium?.copyWith(height: 1.5),
       ),

@@ -17,7 +17,7 @@ search before designing, run its pre-delivery checklist before committing.
 
 ## B. Visual upgrade
 
-- [ ] 4. Typography: bundle Playfair Display (headings) + Source Serif 4 (body),
+- [x] 4. Typography: bundle Playfair Display (headings) + Source Serif 4 (body),
       OFL, in `assets/fonts/`, with `LicenseRegistry`.
 - [ ] 5. Illustrated map: floor pattern per room kind (planks, tiles, carpet,
       grass, stone) and hand-painted vector furniture instead of Material icons.
