@@ -4,16 +4,8 @@ import '../core/strings.dart';
 import '../game/game_controller.dart';
 import '../game/model.dart';
 import '../theme/app_theme.dart';
+import 'furniture_glyph.dart';
 import 'suspect_avatar.dart';
-
-IconData furnitureIcon(Furniture f) => switch (f) {
-  Furniture.chair => Icons.chair,
-  Furniture.rug => Icons.texture,
-  Furniture.table => Icons.table_restaurant,
-  Furniture.plant => Icons.local_florist,
-  Furniture.shelf => Icons.shelves,
-  Furniture.none => Icons.crop_square,
-};
 
 /// The house map with row/column labels. Rebuilds from [controller].
 class BoardView extends StatelessWidget {
@@ -155,7 +147,6 @@ class _Cell extends StatelessWidget {
     final f = b.furniture[index];
     final person = c.personAt(index);
     final scheme = Theme.of(context).colorScheme;
-    final game = context.game;
     final crossed = c.crosses.contains(index);
 
     Color? ring;
@@ -193,25 +184,16 @@ class _Cell extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              if (f.blocks)
-                Icon(
-                  furnitureIcon(f),
-                  size: size * 0.52,
-                  color: game.blockedIcon,
-                ),
-              if (f == Furniture.chair)
+              // A rug is floor: it stays full size under whoever stands on
+              // it. A chair shrinks to a corner badge when occupied.
+              if (f == Furniture.rug)
+                FurnitureGlyph(f, size: size * 0.86)
+              else if (f != Furniture.none && person == null)
+                FurnitureGlyph(f, size: size * 0.66)
+              else if (f == Furniture.chair)
                 Align(
-                  alignment: person == null
-                      ? Alignment.center
-                      : Alignment.bottomRight,
-                  child: Padding(
-                    padding: EdgeInsets.all(person == null ? 0 : size * 0.04),
-                    child: Icon(
-                      Icons.chair,
-                      size: person == null ? size * 0.42 : size * 0.28,
-                      color: game.seat,
-                    ),
-                  ),
+                  alignment: Alignment.bottomRight,
+                  child: FurnitureGlyph(f, size: size * 0.36),
                 ),
               if (crossed && person == null)
                 Icon(
@@ -263,15 +245,7 @@ class _BoardPainter extends CustomPainter {
     for (var i = 0; i < board.cellCount; i++) {
       final tint = colors.roomTints[board.roomOf[i] % colors.roomTints.length];
       canvas.drawRect(rect(i), Paint()..color = tint);
-      if (board.furniture[i] == Furniture.rug) {
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            rect(i).deflate(cell * 0.1),
-            Radius.circular(cell * 0.12),
-          ),
-          Paint()..color = colors.rug,
-        );
-      }
+      _paintFloor(canvas, rect(i), board.rooms[board.roomOf[i]], i);
       if (shaded.contains(i)) {
         canvas.drawRect(rect(i), Paint()..color = colors.takenShade);
       }
@@ -306,6 +280,67 @@ class _BoardPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4,
     );
+  }
+
+  /// Decorative floor per room kind: a second cue besides the tint, kept
+  /// faint (colors.pattern) so furniture and people keep their contrast.
+  void _paintFloor(Canvas canvas, Rect r, RoomKind kind, int index) {
+    final ink = Paint()
+      ..color = colors.pattern
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round;
+    final w = r.width;
+    Offset at(double x, double y) => Offset(r.left + x * w, r.top + y * w);
+    canvas.save();
+    canvas.clipRect(r);
+    switch (kind) {
+      case RoomKind.kitchen || RoomKind.bathroom:
+        // Tiles: 2×2 per square.
+        canvas.drawLine(at(0.5, 0), at(0.5, 1), ink);
+        canvas.drawLine(at(0, 0.5), at(1, 0.5), ink);
+      case RoomKind.library ||
+          RoomKind.study ||
+          RoomKind.lounge ||
+          RoomKind.dining:
+        // Wooden planks with staggered joints.
+        final shift = board.row(index).isEven ? 0.0 : 0.5;
+        for (final y in [1 / 3, 2 / 3]) {
+          canvas.drawLine(at(0, y), at(1, y), ink);
+        }
+        for (var k = 0; k < 3; k++) {
+          final x = (0.25 + shift + k * 0.5) % 1;
+          canvas.drawLine(at(x, k / 3), at(x, (k + 1) / 3), ink);
+        }
+      case RoomKind.bedroom:
+        // Carpet: a fine grid of dots.
+        final dot = Paint()..color = colors.pattern;
+        for (var y = 0; y < 4; y++) {
+          for (var x = 0; x < 4; x++) {
+            canvas.drawCircle(at((x + 0.5) / 4, (y + 0.5) / 4), 1, dot);
+          }
+        }
+      case RoomKind.garden:
+        // Grass tufts at fixed spots that vary per square.
+        const spots = [
+          (0.2, 0.3),
+          (0.65, 0.2),
+          (0.45, 0.65),
+          (0.8, 0.8),
+          (0.15, 0.85),
+        ];
+        for (var k = 0; k < spots.length; k++) {
+          if ((index + k) % 3 == 0) continue;
+          final (x, y) = spots[k];
+          canvas.drawLine(at(x, y), at(x - 0.05, y - 0.1), ink);
+          canvas.drawLine(at(x, y), at(x + 0.05, y - 0.1), ink);
+        }
+      case RoomKind.cellar:
+        // Stone blocks: two courses, offset joints.
+        canvas.drawLine(at(0, 0.5), at(1, 0.5), ink);
+        canvas.drawLine(at(0.35, 0), at(0.35, 0.5), ink);
+        canvas.drawLine(at(0.75, 0.5), at(0.75, 1), ink);
+    }
+    canvas.restore();
   }
 
   @override

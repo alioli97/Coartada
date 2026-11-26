@@ -143,7 +143,7 @@ class GameColors extends ThemeExtension<GameColors> {
     required this.roomTints,
     required this.wall,
     required this.gridLine,
-    required this.rug,
+    required this.pattern,
     required this.seat,
     required this.blockedIcon,
     required this.takenShade,
@@ -155,7 +155,9 @@ class GameColors extends ThemeExtension<GameColors> {
   final List<Color> roomTints;
   final Color wall;
   final Color gridLine;
-  final Color rug;
+
+  /// Faint floor pattern ink (planks, tiles, carpet, grass, stone).
+  final Color pattern;
 
   /// Chairs: warm like rugs, because people can stand on them.
   final Color seat;
@@ -189,8 +191,8 @@ class GameColors extends ThemeExtension<GameColors> {
     ],
     wall: Color(0xFF1A1A1A),
     gridLine: Color(0x331A1A1A),
-    rug: Color(0x55B45309),
-    seat: Color(0xFFB45309),
+    pattern: Color(0x1F1A1A1A),
+    seat: Color(0xFF92400E),
     blockedIcon: Color(0xFF4A4A4A),
     takenShade: Color(0x141A1A1A),
     suspects: _suspects,
@@ -207,8 +209,8 @@ class GameColors extends ThemeExtension<GameColors> {
     ],
     wall: Color(0xFFE2E8F0),
     gridLine: Color(0x33FFFFFF),
-    rug: Color(0x66D97706),
-    seat: Color(0xFFF59E0B),
+    pattern: Color(0x1FFFFFFF),
+    seat: Color(0xFFFBBF24),
     blockedIcon: Color(0xFFCBD5E1),
     takenShade: Color(0x1FFFFFFF),
     suspects: _suspects,

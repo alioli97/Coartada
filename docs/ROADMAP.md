@@ -19,7 +19,7 @@ search before designing, run its pre-delivery checklist before committing.
 
 - [x] 4. Typography: bundle Playfair Display (headings) + Source Serif 4 (body),
       OFL, in `assets/fonts/`, with `LicenseRegistry`.
-- [ ] 5. Illustrated map: floor pattern per room kind (planks, tiles, carpet,
+- [x] 5. Illustrated map: floor pattern per room kind (planks, tiles, carpet,
       grass, stone) and hand-painted vector furniture instead of Material icons.
       Re-check contrast in light and dark.
 - [ ] 6. Original vector portraits for the 8 characters, keeping the initial.
