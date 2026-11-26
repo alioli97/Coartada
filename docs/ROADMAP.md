@@ -37,7 +37,7 @@ search before designing, run its pre-delivery checklist before committing.
       technique is left for later.
 - [x] 10. New clue types: in a corner, by the outer wall, in a different room
       from…, nobody was in room X, on the same diagonal as… (still unique).
-- [ ] 11. 8×8 "Legend" level with zoom (`InteractiveViewer`); generator under
+- [x] 11. 8×8 "Legend" level with zoom (`InteractiveViewer`); generator under
       300 ms.
 
 ## D. Engagement

@@ -17,7 +17,7 @@ Puzzle generatePuzzle({
   throw StateError('Could not generate a case (seed $seed)');
 }
 
-const _roomCount = {4: 3, 5: 4, 6: 5, 7: 6};
+const _roomCount = {4: 3, 5: 4, 6: 5, 7: 6, 8: 7};
 
 /// Relative chance of each clue type being picked, per level. Easier levels
 /// lean on direct clues (row, column, room); harder ones on relations.
@@ -58,6 +58,15 @@ const _weights = {
     DifferentRoom: 2.0,
     SameDiagonal: 2.0,
   },
+  Level.legend: {
+    InRow: 0.4, InColumn: 0.4, InRoom: 2.0, OnFurniture: 2.0, NextTo: 3.0, //
+    NotInRoom: 3.0, NorthOf: 3.0, WestOf: 3.0, SameRoom: 2.0,
+    InCorner: 1.5,
+    ByOuterWall: 1.5,
+    NobodyInRoom: 1.5,
+    DifferentRoom: 2.0,
+    SameDiagonal: 2.0,
+  },
 };
 
 /// Redundant clues kept after minimising, so easy cases are gentler.
@@ -66,6 +75,7 @@ const _spare = {
   Level.detective: 1,
   Level.inspector: 0,
   Level.commissioner: 0,
+  Level.legend: 0,
 };
 
 Puzzle? _tryGenerate(Level level, Variant variant, Random rng, int seed) {

@@ -38,6 +38,7 @@ class Strings {
     Level.detective => _tr('Detective', 'Detectiu', 'Detective'),
     Level.inspector => _tr('Inspector', 'Inspector', 'Inspector'),
     Level.commissioner => _tr('Comisario', 'Comissari', 'Superintendent'),
+    Level.legend => _tr('Leyenda', 'Llegenda', 'Legend'),
   };
   String solvedCount(int n) => n == 1
       ? _tr('1 resuelto', '1 resolt', '1 solved')
@@ -138,6 +139,8 @@ class Strings {
   String get suspects => _tr('Sospechosos', 'Sospitosos', 'Suspects');
   String get clues => _tr('Pistas', 'Pistes', 'Clues');
   String get rooms => _tr('Habitaciones', 'Habitacions', 'Rooms');
+  String get wholeBoard => _tr('Ver todo', 'Veure-ho tot', 'Whole board');
+  String get zoomIn => _tr('Acercar', 'Apropar', 'Zoom in');
   String get undo => _tr('Deshacer', 'Desfer', 'Undo');
   String get placed => _tr('colocado', 'col·locat', 'placed');
   String get crossOut => _tr('Tachar', 'Ratllar', 'Cross out');

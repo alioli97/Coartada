@@ -29,10 +29,7 @@ void main() {
           ),
         ),
       );
-      final squares = find.descendant(
-        of: find.byType(BoardView),
-        matching: find.byType(InkWell),
-      );
+      final squares = _squares();
       expect(squares, findsNWidgets(level.size * level.size));
       final size = tester.getSize(squares.first);
       expect(size.width, greaterThanOrEqualTo(48));
@@ -40,4 +37,49 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('8×8 on a phone: pan or toggle to see the whole board', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(375 * 3, 812 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final app = AppState(await SharedPreferences.getInstance());
+    final p = generatePuzzle(level: Level.legend, seed: 2);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: GameScreen(appState: app, puzzle: p),
+      ),
+    );
+    expect(find.text('Ver todo'), findsOneWidget);
+    await tester.tap(find.text('Ver todo'));
+    await tester.pump();
+    expect(find.text('Acercar'), findsOneWidget);
+
+    // Squares still take taps at the whole-board scale.
+    // (Nobody selected: a tap crosses the square out.)
+    final free = p.board.furniture.indexWhere((f) => !f.blocks);
+    await tester.tap(_squares().at(free));
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: _squares().at(free),
+        matching: find.byIcon(Icons.close),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Acercar'));
+    await tester.pump();
+    expect(find.text('Ver todo'), findsOneWidget);
+  });
 }
+
+/// The board's squares (the zoom button's InkWell isn't one).
+Finder _squares() => find.descendant(
+  of: find.byType(BoardView),
+  matching: find.byWidgetPredicate(
+    (w) => w is InkWell && w.customBorder == null && w.borderRadius == null,
+  ),
+);

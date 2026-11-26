@@ -41,7 +41,8 @@ enum Level {
   apprentice(4),
   detective(5),
   inspector(6),
-  commissioner(7);
+  commissioner(7),
+  legend(8);
 
   const Level(this.size);
   final int size;

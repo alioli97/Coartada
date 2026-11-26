@@ -55,4 +55,10 @@ void main() {
       }
     });
   }
+
+  test('one tint per room, even in an 8×8 house', () {
+    for (final colors in [GameColors.light, GameColors.dark]) {
+      expect(colors.roomTints.toSet(), hasLength(greaterThanOrEqualTo(7)));
+    }
+  });
 }

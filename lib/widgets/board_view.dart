@@ -28,6 +28,9 @@ class BoardView extends StatelessWidget {
   /// ≥ 48dp on a 375px-wide phone (see test/board_size_test.dart).
   static const _label = 18.0;
 
+  /// Smallest square: a full touch target (48dp, Android).
+  static const minSquare = 48.0;
+
   @override
   Widget build(BuildContext context) {
     final c = controller;
@@ -44,10 +47,13 @@ class BoardView extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final side = box.maxWidth.clamp(0.0, 520.0);
-        final cell = (side - _label) / n;
-        return SizedBox(
-          width: side,
-          height: side,
+        // Squares never shrink below a touch target: if the board doesn't
+        // fit at that size (8×8 on a phone), it becomes zoomable instead.
+        final cell = ((side - _label) / n).clamp(minSquare, double.infinity);
+        final boardSide = _label + cell * n;
+        final board = SizedBox(
+          width: boardSide,
+          height: boardSide,
           child: Stack(
             children: [
               for (var col = 0; col < n; col++)
@@ -140,7 +146,93 @@ class BoardView extends StatelessWidget {
             ],
           ),
         );
+        if (boardSide <= side + 0.5) return board;
+        return _ZoomableBoard(
+          viewport: side,
+          boardSide: boardSide,
+          strings: strings,
+          child: board,
+        );
       },
+    );
+  }
+}
+
+/// A board bigger than the screen (8×8 on a phone): squares stay 48dp and
+/// the player pans with one finger or pinches. A button toggles between
+/// close-up and the whole board, so zoom never needs a two-finger gesture.
+class _ZoomableBoard extends StatefulWidget {
+  const _ZoomableBoard({
+    required this.viewport,
+    required this.boardSide,
+    required this.strings,
+    required this.child,
+  });
+
+  final double viewport;
+  final double boardSide;
+  final Strings strings;
+  final Widget child;
+
+  @override
+  State<_ZoomableBoard> createState() => _ZoomableBoardState();
+}
+
+class _ZoomableBoardState extends State<_ZoomableBoard> {
+  final _zoom = TransformationController();
+
+  double get _fit => widget.viewport / widget.boardSide;
+  // X scale (getMaxScaleOnAxis would include the unscaled Z axis).
+  bool get _wholeBoard => _zoom.value.entry(0, 0) <= _fit + 0.01;
+
+  @override
+  void initState() {
+    super.initState();
+    _zoom.addListener(_changed);
+  }
+
+  void _changed() => setState(() {});
+
+  @override
+  void dispose() {
+    _zoom
+      ..removeListener(_changed)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    _zoom.value = _wholeBoard
+        ? Matrix4.identity()
+        : (Matrix4.identity()..scaleByDouble(_fit, _fit, 1, 1));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.strings;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        TextButton.icon(
+          onPressed: _toggle,
+          icon: Icon(_wholeBoard ? Icons.zoom_in : Icons.zoom_out_map),
+          label: Text(_wholeBoard ? s.zoomIn : s.wholeBoard),
+        ),
+        SizedBox.square(
+          dimension: widget.viewport,
+          child: ClipRect(
+            child: InteractiveViewer(
+              transformationController: _zoom,
+              constrained: false,
+              minScale: _fit,
+              maxScale: 2,
+              boundaryMargin: EdgeInsets.zero,
+              child: widget.child,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
