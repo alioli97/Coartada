@@ -16,6 +16,8 @@ flutter run -d chrome
 flutter build web   # preview: python3 -m http.server 5180 --directory build/web
 ```
 
+CI (`.github/workflows/ci.yml`) checks formatting (`dart format lib test`), runs `flutter analyze` and `flutter test` on pushes to `main` and on PRs, with Flutter 3.50.0: bump it there when the local SDK changes. Keep it green.
+
 ## Architecture
 
 - `lib/game/` — pure Dart, no widgets except `ChangeNotifier`:
