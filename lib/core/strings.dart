@@ -23,6 +23,13 @@ class Strings {
   String get solvedToday => _tr('Resuelto hoy', 'Resolt avui', 'Solved today');
   String get play => _tr('Jugar', 'Jugar', 'Play');
   String get newCase => _tr('Nuevo caso', 'Cas nou', 'New case');
+  String get continueCase =>
+      _tr('Continuar caso', 'Continuar el cas', 'Continue case');
+  String placedOf(int placed, int total) => _tr(
+    '$placed de $total colocados',
+    '$placed de $total col·locats',
+    '$placed of $total placed',
+  );
   String get howToPlay => _tr('Cómo jugar', 'Com es juga', 'How to play');
   String get settings => _tr('Ajustes', 'Configuració', 'Settings');
   String levelName(Level l) => switch (l) {

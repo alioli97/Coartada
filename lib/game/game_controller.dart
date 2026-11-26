@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
 
+import 'generator.dart';
 import 'model.dart';
 
 enum Phase { placing, accusing, solved }
@@ -12,8 +13,73 @@ enum TapResult { ok, blocked, locked }
 
 /// What the player has on the board, with undo. UI-agnostic.
 class GameController extends ChangeNotifier {
-  GameController(this.puzzle, {this.daily = false})
-    : placement = List.filled(puzzle.people, null);
+  GameController(
+    this.puzzle, {
+    this.daily = false,
+    Duration elapsed = Duration.zero,
+  }) : placement = List.filled(puzzle.people, null),
+       _elapsedBefore = elapsed;
+
+  /// Rebuilds a saved game (see [toJson]). The case itself is regenerated
+  /// from its seed, so only the player's marks are stored. Returns null for
+  /// data from another version or that doesn't fit the case.
+  static GameController? fromJson(Map<String, dynamic> json) {
+    try {
+      if (json['v'] != saveVersion) return null;
+      final puzzle = generatePuzzle(
+        level: Level.values.byName(json['level'] as String),
+        seed: json['seed'] as int,
+        variant: Variant.values.byName(json['variant'] as String),
+      );
+      final g = GameController(
+        puzzle,
+        daily: json['daily'] as bool,
+        elapsed: Duration(milliseconds: json['elapsedMs'] as int),
+      );
+      final cells = puzzle.board.cellCount;
+      bool validCell(int c) => c >= 0 && c < cells;
+      final placement = (json['placement'] as List).cast<int?>();
+      if (placement.length != puzzle.people) return null;
+      if (placement.any((c) => c != null && !validCell(c))) return null;
+      for (var p = 0; p < placement.length; p++) {
+        g.placement[p] = placement[p];
+      }
+      g.crosses.addAll((json['crosses'] as List).cast<int>().where(validCell));
+      g.doneClues.addAll(
+        (json['doneClues'] as List).cast<int>().where(
+          (i) => i >= 0 && i < puzzle.clues.length,
+        ),
+      );
+      g.locked.addAll(
+        (json['locked'] as List).cast<int>().where(
+          (p) => p >= 0 && p < puzzle.people,
+        ),
+      );
+      g.hints = json['hints'] as int;
+      g.wrongAccusations = json['wrongAccusations'] as int;
+      return g;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static const saveVersion = 1;
+
+  /// The player's progress, enough to resume with [fromJson].
+  Map<String, dynamic> toJson() => {
+    'v': saveVersion,
+    'seed': puzzle.seed,
+    'level': puzzle.level.name,
+    'variant': board.variant.name,
+    'daily': daily,
+    'placement': placement,
+    'crosses': crosses.toList(),
+    'doneClues': doneClues.toList(),
+    'locked': locked.toList(),
+    'hints': hints,
+    'wrongAccusations': wrongAccusations,
+    'elapsedMs': elapsed.inMilliseconds,
+  };
 
   final Puzzle puzzle;
   final bool daily;
@@ -27,7 +93,20 @@ class GameController extends ChangeNotifier {
   /// People placed by a hint: right and can't be moved.
   final Set<int> locked = {};
   final List<(List<int?>, Set<int>)> _history = [];
-  final Stopwatch watch = Stopwatch()..start();
+  final Stopwatch _watch = Stopwatch()..start();
+  final Duration _elapsedBefore;
+
+  /// Time played, including earlier sessions of a resumed game.
+  Duration get elapsed => _elapsedBefore + _watch.elapsed;
+
+  int get placedCount => placement.where((c) => c != null).length;
+
+  /// Stops the clock while the app is in the background.
+  void pauseClock() => _watch.stop();
+
+  void resumeClock() {
+    if (phase != Phase.solved) _watch.start();
+  }
 
   int? selected;
   bool crossMode = false;
@@ -178,7 +257,7 @@ class GameController extends ChangeNotifier {
   bool accuse(int person) {
     if (person == puzzle.culprit) {
       phase = Phase.solved;
-      watch.stop();
+      _watch.stop();
       notifyListeners();
       return true;
     }
@@ -228,7 +307,7 @@ class GameController extends ChangeNotifier {
 
   @override
   void dispose() {
-    watch.stop();
+    _watch.stop();
     super.dispose();
   }
 }

@@ -7,7 +7,7 @@ search before designing, run its pre-delivery checklist before committing.
 
 ## A. Base polish
 
-- [ ] 1. Save and resume the game in progress (`GameController` to/from JSON;
+- [x] 1. Save and resume the game in progress (`GameController` to/from JSON;
       the case is regenerated from its seed; "Continue" card on home; save on
       every change and when the app goes to the background, clock paused).
 - [ ] 2. Board squares ≥ 48dp on a 7×7 board at 375px wide (smaller label

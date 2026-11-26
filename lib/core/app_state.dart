@@ -33,6 +33,7 @@ class AppState extends ChangeNotifier {
   static const _kNoTouch = 'variant_no_touch';
   static const _kStats = 'stats';
   static const _kDaily = 'daily_solved';
+  static const _kSavedGame = 'saved_game';
 
   final SharedPreferences _prefs;
   late String _language;
@@ -63,6 +64,46 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The one game in progress, if any (see `GameController.toJson`).
+  Map<String, dynamic>? get savedGameJson {
+    final raw = _prefs.getString(_kSavedGame);
+    if (raw == null) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Summary for the home "Continue" card, read without regenerating the case.
+  SavedGameInfo? get savedGame {
+    final j = savedGameJson;
+    if (j == null) return null;
+    try {
+      return SavedGameInfo(
+        level: Level.values.byName(j['level'] as String),
+        variant: Variant.values.byName(j['variant'] as String),
+        seed: j['seed'] as int,
+        daily: j['daily'] as bool,
+        placed: (j['placement'] as List).where((c) => c != null).length,
+        people: (j['placement'] as List).length,
+        elapsed: Duration(milliseconds: j['elapsedMs'] as int),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Saves without notifying: it runs on every move, and the home screen
+  /// refreshes with [refresh] when the game screen closes.
+  void saveGame(Map<String, dynamic> json) =>
+      _prefs.setString(_kSavedGame, jsonEncode(json));
+
+  void clearSavedGame() => _prefs.remove(_kSavedGame);
+
+  /// Rebuilds listeners after changes made without notifying.
+  void refresh() => notifyListeners();
+
   static String statsKey(Level l, Variant v) => '${l.name}_${v.name}';
 
   LevelStats stats(Level l, Variant v) =>
@@ -91,6 +132,26 @@ class AppState extends ChangeNotifier {
     if (daily) _prefs.setInt(_kDaily, p.seed);
     notifyListeners();
   }
+}
+
+class SavedGameInfo {
+  const SavedGameInfo({
+    required this.level,
+    required this.variant,
+    required this.seed,
+    required this.daily,
+    required this.placed,
+    required this.people,
+    required this.elapsed,
+  });
+
+  final Level level;
+  final Variant variant;
+  final int seed;
+  final bool daily;
+  final int placed;
+  final int people;
+  final Duration elapsed;
 }
 
 class LevelStats {

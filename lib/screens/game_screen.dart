@@ -15,31 +15,84 @@ import '../widgets/suspect_avatar.dart';
 import 'how_to_play_screen.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({
+  GameScreen({
     super.key,
     required this.appState,
-    required this.puzzle,
-    this.daily = false,
-  });
+    required Puzzle puzzle,
+    bool daily = false,
+  }) : controller = GameController(puzzle, daily: daily),
+       resumed = false;
+
+  /// Continues a saved game.
+  const GameScreen.resume({
+    super.key,
+    required this.appState,
+    required this.controller,
+  }) : resumed = true;
 
   final AppState appState;
-  final Puzzle puzzle;
-  final bool daily;
+  final GameController controller;
+
+  /// A resumed game is the saved one, so leaving it always updates the save
+  /// (time played); a new one only once the player has moved.
+  final bool resumed;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late final GameController game = GameController(
-    widget.puzzle,
-    daily: widget.daily,
-  );
+  GameController get game => widget.controller;
+  late final AppLifecycleListener _lifecycle;
+
+  /// Whether the player changed anything since opening: an untouched new
+  /// case must not replace the saved one.
+  late bool _dirty = widget.resumed;
 
   Strings get s => widget.appState.s;
 
   @override
+  void initState() {
+    super.initState();
+    _lastProgress = _progressKey();
+    game.addListener(_autosave);
+    _lifecycle = AppLifecycleListener(
+      onHide: () {
+        game.pauseClock();
+        if (_dirty) _persist();
+      },
+      onShow: game.resumeClock,
+    );
+  }
+
+  /// Saves only when progress changed (not on selection or focus).
+  void _autosave() {
+    final now = _progressKey();
+    if (now == _lastProgress) return;
+    _lastProgress = now;
+    _dirty = true;
+    _persist();
+  }
+
+  late String _lastProgress;
+
+  String _progressKey() =>
+      '${game.placement}|${game.crosses}|${game.doneClues}|'
+      '${game.hints}|${game.wrongAccusations}|${game.phase}';
+
+  void _persist() {
+    if (game.phase == Phase.solved) {
+      widget.appState.clearSavedGame();
+    } else {
+      widget.appState.saveGame(game.toJson());
+    }
+  }
+
+  @override
   void dispose() {
+    _lifecycle.dispose();
+    game.removeListener(_autosave);
+    if (_dirty) _persist();
     game.dispose();
     super.dispose();
   }
@@ -73,7 +126,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Future<void> _accuse() async {
-    final p = widget.puzzle;
+    final p = game.puzzle;
     while (game.phase == Phase.accusing) {
       if (!mounted) return;
       final pick = await showModalBottomSheet<int>(
@@ -107,11 +160,7 @@ class _GameScreenState extends State<GameScreen> {
       if (pick == null || !mounted) return; // closed: can reopen with Check
       if (game.accuse(pick)) {
         HapticFeedback.mediumImpact();
-        widget.appState.recordSolved(
-          p,
-          game.watch.elapsed,
-          daily: widget.daily,
-        );
+        widget.appState.recordSolved(p, game.elapsed, daily: game.daily);
         await _showSolved();
       } else {
         HapticFeedback.heavyImpact();
@@ -121,7 +170,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Future<void> _showSolved() async {
-    final p = widget.puzzle;
+    final p = game.puzzle;
     final room = p.board.rooms[p.board.roomOf[p.solution[p.victim]]];
     final again = await showDialog<bool>(
       context: context,
@@ -141,7 +190,7 @@ class _GameScreenState extends State<GameScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            _StatRow(label: s.time, value: formatDuration(game.watch.elapsed)),
+            _StatRow(label: s.time, value: formatDuration(game.elapsed)),
             _StatRow(label: s.hintsUsed, value: '${game.hints}'),
           ],
         ),
@@ -177,89 +226,98 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final p = widget.puzzle;
+    final p = game.puzzle;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return ListenableBuilder(
       listenable: game,
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.daily ? s.dailyCase : s.caseTitle(p.seed)),
-              Text(
-                '${s.levelName(p.level)} · ${p.board.size}×${p.board.size}'
-                '${p.board.variant == Variant.noTouch ? ' · ${s.noTouchTitle}' : ''}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
+      // Save on pop, before the home screen refreshes (dispose runs only
+      // after the exit animation).
+      builder: (context, _) => PopScope<Object?>(
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop && _dirty) _persist();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(game.daily ? s.dailyCase : s.caseTitle(p.seed)),
+                Text(
+                  '${s.levelName(p.level)} · ${p.board.size}×${p.board.size}'
+                  '${p.board.variant == Variant.noTouch ? ' · ${s.noTouchTitle}' : ''}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
+              ],
+            ),
+            actions: [
+              Center(child: _Clock(game: game)),
+              IconButton(
+                tooltip: s.howToPlay,
+                icon: const Icon(Icons.help_outline),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => HowToPlayScreen(strings: s),
+                  ),
+                ),
+              ),
+              PopupMenuButton<void>(
+                itemBuilder: (_) => [
+                  PopupMenuItem(onTap: game.restart, child: Text(s.restart)),
+                ],
               ),
             ],
           ),
-          actions: [
-            Center(child: _Clock(watch: game.watch)),
-            IconButton(
-              tooltip: s.howToPlay,
-              icon: const Icon(Icons.help_outline),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => HowToPlayScreen(strings: s)),
-              ),
-            ),
-            PopupMenuButton<void>(
-              itemBuilder: (_) => [
-                PopupMenuItem(onTap: game.restart, child: Text(s.restart)),
-              ],
-            ),
-          ],
-        ),
-        body: SafeArea(
-          bottom: false,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                children: [
-                  _Briefing(puzzle: p, strings: s),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: BoardView(
-                      controller: game,
-                      strings: s,
-                      onTap: _onTap,
+          body: SafeArea(
+            bottom: false,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  children: [
+                    _Briefing(puzzle: p, strings: s),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: BoardView(
+                        controller: game,
+                        strings: s,
+                        onTap: _onTap,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  _Inspector(game: game, strings: s),
-                  const SizedBox(height: 8),
-                  _RoomLegend(board: p.board, strings: s),
-                  const SizedBox(height: 20),
-                  _SectionTitle(s.suspects),
-                  _SuspectTray(game: game, strings: s),
-                  const SizedBox(height: 20),
-                  _SectionTitle(s.clues),
-                  for (var i = 0; i < p.clues.length; i++)
-                    _ClueTile(
-                      text: s.clue(p.clues[i], p),
-                      rosterIndex: p.cast[p.clues[i].subject],
-                      done: game.doneClues.contains(i),
-                      onTap: () => game.toggleClue(i),
-                    ),
-                ],
+                    const SizedBox(height: 8),
+                    _Inspector(game: game, strings: s),
+                    const SizedBox(height: 8),
+                    _RoomLegend(board: p.board, strings: s),
+                    const SizedBox(height: 20),
+                    _SectionTitle(s.suspects),
+                    _SuspectTray(game: game, strings: s),
+                    const SizedBox(height: 20),
+                    _SectionTitle(s.clues),
+                    for (var i = 0; i < p.clues.length; i++)
+                      _ClueTile(
+                        text: s.clue(p.clues[i], p),
+                        rosterIndex: p.cast[p.clues[i].subject],
+                        done: game.doneClues.contains(i),
+                        onTap: () => game.toggleClue(i),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        bottomNavigationBar: _ActionBar(
-          strings: s,
-          game: game,
-          onCheck: _check,
-          onHint: () {
-            final who = game.hint();
-            if (who != null) HapticFeedback.selectionClick();
-          },
+          bottomNavigationBar: _ActionBar(
+            strings: s,
+            game: game,
+            onCheck: _check,
+            onHint: () {
+              final who = game.hint();
+              if (who != null) HapticFeedback.selectionClick();
+            },
+          ),
         ),
       ),
     );
@@ -629,8 +687,8 @@ class _StatRow extends StatelessWidget {
 }
 
 class _Clock extends StatefulWidget {
-  const _Clock({required this.watch});
-  final Stopwatch watch;
+  const _Clock({required this.game});
+  final GameController game;
 
   @override
   State<_Clock> createState() => _ClockState();
@@ -658,7 +716,7 @@ class _ClockState extends State<_Clock> {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 8),
     child: Text(
-      formatDuration(widget.watch.elapsed),
+      formatDuration(widget.game.elapsed),
       style: Theme.of(context).textTheme.titleMedium
           ?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
     ),

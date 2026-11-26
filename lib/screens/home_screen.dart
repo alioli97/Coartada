@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/app_state.dart';
 import '../core/strings.dart';
+import '../game/game_controller.dart';
 import '../game/generator.dart';
 import '../game/model.dart';
 import '../widgets/settings_sheet.dart';
@@ -18,14 +19,28 @@ class HomeScreen extends StatelessWidget {
   /// Fixed date for tests; defaults to the real clock.
   final DateTime Function()? now;
 
-  void _open(BuildContext context, Puzzle puzzle, {bool daily = false}) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            GameScreen(appState: appState, puzzle: puzzle, daily: daily),
-      ),
-    );
+  void _open(BuildContext context, Puzzle puzzle, {bool daily = false}) => _go(
+    context,
+    GameScreen(appState: appState, puzzle: puzzle, daily: daily),
+  );
+
+  void _resume(BuildContext context) {
+    final json = appState.savedGameJson;
+    final game = json == null ? null : GameController.fromJson(json);
+    if (game == null) {
+      // Saved by an older version or corrupted: drop it.
+      appState.clearSavedGame();
+      appState.refresh();
+      return;
+    }
+    _go(context, GameScreen.resume(appState: appState, controller: game));
+  }
+
+  /// The game screen saves progress without notifying, so the home screen
+  /// refreshes (Continue card, stats) when it closes.
+  Future<void> _go(BuildContext context, Widget screen) async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    appState.refresh();
   }
 
   @override
@@ -35,6 +50,10 @@ class HomeScreen extends StatelessWidget {
     final scheme = theme.colorScheme;
     final today = (now ?? DateTime.now)();
     final dailyDone = appState.dailySolved(today);
+    final saved = appState.savedGame;
+    final dailySeed = AppState.dailySeed(today);
+    final savedIsToday =
+        saved != null && saved.daily && saved.seed == dailySeed;
 
     return Scaffold(
       body: SafeArea(
@@ -82,17 +101,27 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
+                if (saved != null) ...[
+                  _ContinueCard(
+                    strings: s,
+                    info: saved,
+                    onTap: () => _resume(context),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 _DailyCard(
                   strings: s,
                   done: dailyDone,
-                  onTap: () => _open(
-                    context,
-                    generatePuzzle(
-                      level: Level.inspector,
-                      seed: AppState.dailySeed(today),
-                    ),
-                    daily: true,
-                  ),
+                  onTap: savedIsToday
+                      ? () => _resume(context)
+                      : () => _open(
+                          context,
+                          generatePuzzle(
+                            level: Level.inspector,
+                            seed: dailySeed,
+                          ),
+                          daily: true,
+                        ),
                 ),
                 const SizedBox(height: 28),
                 Semantics(
@@ -130,6 +159,85 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({
+    required this.strings,
+    required this.info,
+    required this.onTap,
+  });
+  final Strings strings;
+  final SavedGameInfo info;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final name = info.daily
+        ? strings.dailyCase
+        : '${strings.levelName(info.level)} · ${info.level.size}×${info.level.size}';
+    final detail = [
+      strings.placedOf(info.placed, info.people),
+      formatDuration(info.elapsed),
+      if (info.variant == Variant.noTouch) strings.noTouchTitle,
+    ].join(' · ');
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: scheme.primary, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(Icons.restore, color: scheme.primary, size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      strings.continueCase,
+                      style: theme.textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(name, style: theme.textTheme.titleSmall),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: info.people == 0 ? 0 : info.placed / info.people,
+                        minHeight: 6,
+                        backgroundColor: scheme.surfaceContainerHigh,
+                        semanticsLabel: strings.placedOf(
+                          info.placed,
+                          info.people,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      detail,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.play_arrow, color: scheme.primary, size: 32),
+            ],
           ),
         ),
       ),
