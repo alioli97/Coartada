@@ -4,6 +4,8 @@
 
 Coartada (Dart package `coartada`, app id `com.alioli97.coartada`): an original logic-deduction game in Flutter. A house map is an N×N grid split into rooms, with furniture. The player places N people (one per row and per column, never on tables/plants/bookshelves) using clues, then names the culprit: the only person sharing the victim's room. Cases are **generated**, not hand-written, and always have exactly one solution. It is inspired by the "sudoku + murder mystery" genre but must stay original: never copy the name, cases, characters or art of existing games (e.g. Murdoku).
 
+Work plan: `docs/ROADMAP.md`. Read it before starting a step and tick the step's box in the same commit that completes it. One step = one commit on its own branch, merged into `main` with CI green; commit messages in English, Conventional Commits.
+
 Flutter 3.50 (Dart 3.14). Material widgets come from `package:material_ui/material_ui.dart` (never `package:flutter/material.dart`). No backend: everything is local (SharedPreferences).
 
 ## Commands
