@@ -35,6 +35,7 @@ class AppState extends ChangeNotifier {
   static const _kStats = 'stats';
   static const _kDaily = 'daily_solved';
   static const _kSavedGame = 'saved_game';
+  static const _kStreak = 'daily_streak';
   static const _kHaptics = 'haptics';
   static const _kVisualHelp = 'visual_help';
 
@@ -134,7 +135,13 @@ class AppState extends ChangeNotifier {
 
   bool dailySolved(DateTime now) => _prefs.getInt(_kDaily) == dailySeed(now);
 
-  void recordSolved(Puzzle p, Duration time, {required bool daily}) {
+  void recordSolved(
+    Puzzle p,
+    Duration time, {
+    required bool daily,
+    int hints = 0,
+    DateTime? now,
+  }) {
     final key = statsKey(p.level, p.board.variant);
     final old = stats(p.level, p.board.variant);
     final secs = time.inSeconds;
@@ -143,14 +150,73 @@ class AppState extends ChangeNotifier {
       bestSeconds: old.bestSeconds == null || secs < old.bestSeconds!
           ? secs
           : old.bestSeconds,
+      totalSeconds: old.totalSeconds + secs,
+      totalHints: old.totalHints + hints,
+      noHints: old.noHints + (hints == 0 ? 1 : 0),
+      tracked: old.tracked + 1,
     );
     _prefs.setString(
       _kStats,
       jsonEncode(_stats.map((k, v) => MapEntry(k, v.toJson()))),
     );
-    if (daily) _prefs.setInt(_kDaily, p.seed);
+    if (daily) {
+      _prefs.setInt(_kDaily, p.seed);
+      // Only today's case on its own day counts for the streak.
+      if (p.seed == dailySeed(now ?? DateTime.now())) _extendStreak(p.seed);
+    }
     notifyListeners();
   }
+
+  /// Days in a row with the daily case solved.
+  Streak streak(DateTime now) {
+    final raw = _prefs.getString(_kStreak);
+    if (raw == null) return const Streak();
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      final last = j['last'] as int, current = j['current'] as int;
+      final today = dailySeed(now), yesterday = _dayBefore(today);
+      // Broken once a whole day passes without solving.
+      final alive = last == today || last == yesterday;
+      return Streak(
+        current: alive ? current : 0,
+        best: j['best'] as int,
+        solvedToday: last == today,
+      );
+    } catch (_) {
+      return const Streak();
+    }
+  }
+
+  void _extendStreak(int day) {
+    var (last, current, best) = (0, 0, 0);
+    final raw = _prefs.getString(_kStreak);
+    if (raw != null) {
+      try {
+        final j = jsonDecode(raw) as Map<String, dynamic>;
+        (last, current, best) = (
+          j['last'] as int,
+          j['current'] as int,
+          j['best'] as int,
+        );
+      } catch (_) {}
+    }
+    if (last == day) return;
+    current = last == _dayBefore(day) ? current + 1 : 1;
+    if (current > best) best = current;
+    _prefs.setString(
+      _kStreak,
+      jsonEncode({'last': day, 'current': current, 'best': best}),
+    );
+  }
+
+  /// yyyymmdd of the day before [day] (also yyyymmdd).
+  static int _dayBefore(int day) =>
+      dailySeed(DateTime(day ~/ 10000, day ~/ 100 % 100, day % 100 - 1));
+
+  /// Stats of every level for [v], in level order.
+  List<(Level, LevelStats)> allStats(Variant v) => [
+    for (final l in Level.values) (l, stats(l, v)),
+  ];
 }
 
 class SavedGameInfo {
@@ -173,17 +239,57 @@ class SavedGameInfo {
   final Duration elapsed;
 }
 
+class Streak {
+  const Streak({this.current = 0, this.best = 0, this.solvedToday = false});
+  final int current;
+  final int best;
+  final bool solvedToday;
+}
+
 class LevelStats {
-  const LevelStats({this.solved = 0, this.bestSeconds});
+  const LevelStats({
+    this.solved = 0,
+    this.bestSeconds,
+    this.totalSeconds = 0,
+    this.totalHints = 0,
+    this.noHints = 0,
+    this.tracked = 0,
+  });
   factory LevelStats.fromJson(Map<String, dynamic> j) => LevelStats(
     solved: j['solved'] as int? ?? 0,
     bestSeconds: j['best'] as int?,
+    // Optional: stats saved before these were tracked.
+    totalSeconds: j['total'] as int? ?? 0,
+    totalHints: j['hints'] as int? ?? 0,
+    noHints: j['noHints'] as int? ?? 0,
+    tracked: j['tracked'] as int? ?? 0,
   );
 
   final int solved;
   final int? bestSeconds;
+  final int totalSeconds;
+  final int totalHints;
 
-  Map<String, dynamic> toJson() => {'solved': solved, 'best': bestSeconds};
+  /// Cases solved without any hint.
+  final int noHints;
+
+  /// Solves with time and hints recorded (older ones only kept the count),
+  /// the base for [average] and [hintsPerCase].
+  final int tracked;
+
+  Duration? get average =>
+      tracked == 0 ? null : Duration(seconds: (totalSeconds / tracked).round());
+
+  double? get hintsPerCase => tracked == 0 ? null : totalHints / tracked;
+
+  Map<String, dynamic> toJson() => {
+    'solved': solved,
+    'best': bestSeconds,
+    'total': totalSeconds,
+    'hints': totalHints,
+    'noHints': noHints,
+    'tracked': tracked,
+  };
 }
 
 String formatDuration(Duration d) {

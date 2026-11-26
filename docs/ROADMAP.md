@@ -42,7 +42,7 @@ search before designing, run its pre-delivery checklist before committing.
 
 ## D. Engagement
 
-- [ ] 12. Statistics screen and daily streak (current and best).
+- [x] 12. Statistics screen and daily streak (current and best).
 - [ ] 13. Daily archive: last 30 days playable (count for stats, not streak).
 - [ ] 14. Share a spoiler-free result via `share_plus`.
 

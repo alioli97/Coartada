@@ -182,7 +182,12 @@ class _GameScreenState extends State<GameScreen>
         // A "not them" message from a wrong guess must not linger.
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         _haptic(HapticFeedback.mediumImpact);
-        widget.appState.recordSolved(p, game.elapsed, daily: game.daily);
+        widget.appState.recordSolved(
+          p,
+          game.elapsed,
+          daily: game.daily,
+          hints: game.hints,
+        );
         // Let the reveal (dimmed rooms, outlined crime scene) play first.
         await Future<void>.delayed(
           Motion.of(context, Motion.reveal + Motion.revealHold),

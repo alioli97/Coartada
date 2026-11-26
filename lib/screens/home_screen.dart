@@ -10,6 +10,7 @@ import '../game/model.dart';
 import '../widgets/settings_sheet.dart';
 import 'game_screen.dart';
 import 'how_to_play_screen.dart';
+import 'stats_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.appState, this.now});
@@ -77,6 +78,14 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
+                      tooltip: s.stats,
+                      icon: const Icon(Icons.bar_chart),
+                      onPressed: () => _go(
+                        context,
+                        StatsScreen(appState: appState, now: now),
+                      ),
+                    ),
+                    IconButton(
                       tooltip: s.howToPlay,
                       icon: const Icon(Icons.help_outline),
                       onPressed: () => Navigator.push(
@@ -112,6 +121,7 @@ class HomeScreen extends StatelessWidget {
                 _DailyCard(
                   strings: s,
                   done: dailyDone,
+                  streak: appState.streak(today).current,
                   onTap: savedIsToday
                       ? () => _resume(context)
                       : () => _open(
@@ -249,10 +259,12 @@ class _DailyCard extends StatelessWidget {
   const _DailyCard({
     required this.strings,
     required this.done,
+    required this.streak,
     required this.onTap,
   });
   final Strings strings;
   final bool done;
+  final int streak;
   final VoidCallback onTap;
 
   @override
@@ -282,9 +294,13 @@ class _DailyCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      done
-                          ? strings.solvedToday
-                          : '${strings.levelName(Level.inspector)} · 6×6',
+                      [
+                        if (done)
+                          strings.solvedToday
+                        else
+                          '${strings.levelName(Level.inspector)} · 6×6',
+                        if (streak > 0) strings.streakLine(streak),
+                      ].join(' · '),
                       style: theme.textTheme.bodyMedium?.copyWith(color: fg),
                     ),
                   ],

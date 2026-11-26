@@ -32,6 +32,42 @@ class Strings {
     '$placed of $total placed',
   );
   String get howToPlay => _tr('Cómo jugar', 'Com es juga', 'How to play');
+  String get stats => _tr('Estadísticas', 'Estadístiques', 'Statistics');
+  String get currentStreak =>
+      _tr('Racha actual', 'Ratxa actual', 'Current streak');
+  String get bestStreak => _tr('Mejor racha', 'Millor ratxa', 'Best streak');
+  String days(int n) => n == 1
+      ? _tr('1 día', '1 dia', '1 day')
+      : _tr('$n días', '$n dies', '$n days');
+  String streakLine(int n) => _tr('Racha: ', 'Ratxa: ', 'Streak: ') + days(n);
+  String get todayDone =>
+      _tr('Caso de hoy resuelto', 'Cas d\'avui resolt', 'Today\'s case solved');
+  String get todayPending => _tr(
+    'Caso de hoy pendiente',
+    'Cas d\'avui pendent',
+    'Today\'s case still to solve',
+  );
+  String get classic => _tr('Clásico', 'Clàssic', 'Classic');
+  String get noTouchShort => _tr('Sin roces', 'Sense tocar-se', 'No-touch');
+  String get totalSolved =>
+      _tr('Casos resueltos', 'Casos resolts', 'Cases solved');
+  String get withoutHints => _tr('Sin ayudas', 'Sense ajudes', 'Without hints');
+  String get solvedLabel => _tr('Resueltos', 'Resolts', 'Solved');
+  String get bestLabel => _tr('Mejor', 'Millor', 'Best');
+  String get averageLabel => _tr('Media', 'Mitjana', 'Average');
+  String get hintsPerCase => _tr('Ayudas/caso', 'Ajudes/cas', 'Hints/case');
+  String get noneYet => _tr(
+    'Aún no has resuelto ningún caso en este modo.',
+    'Encara no has resolt cap cas en aquest mode.',
+    'No cases solved in this mode yet.',
+  );
+
+  /// One decimal, with the language's decimal separator.
+  String decimal(double x) {
+    final t = x.toStringAsFixed(1);
+    return lang == 'en' ? t : t.replaceAll('.', ',');
+  }
+
   String get settings => _tr('Ajustes', 'Configuració', 'Settings');
   String levelName(Level l) => switch (l) {
     Level.apprentice => _tr('Aprendiz', 'Aprenent', 'Apprentice'),
