@@ -9,7 +9,11 @@ enum Phase { placing, accusing, solved }
 
 enum CheckResult { incomplete, wrong, correct }
 
-enum TapResult { ok, blocked, locked }
+enum TapResult { ok, blocked, locked, needsSuspect }
+
+/// What tapping a square does: place the selected person, cross the square
+/// out, or pencil the selected person in as a possibility.
+enum InputMode { place, cross, notes }
 
 /// What the player has on the board, with undo. UI-agnostic.
 class GameController extends ChangeNotifier {
@@ -55,6 +59,17 @@ class GameController extends ChangeNotifier {
           (p) => p >= 0 && p < puzzle.people,
         ),
       );
+      // Optional: saves from before pencil notes have none.
+      final notes = (json['notes'] as Map<String, dynamic>?) ?? const {};
+      for (final MapEntry(:key, :value) in notes.entries) {
+        final cell = int.parse(key);
+        final people = (value as List).cast<int>().where(
+          (p) => p >= 0 && p < puzzle.people,
+        );
+        if (validCell(cell) && people.isNotEmpty) {
+          g.notes[cell] = people.toSet();
+        }
+      }
       g.hints = json['hints'] as int;
       g.wrongAccusations = json['wrongAccusations'] as int;
       return g;
@@ -76,6 +91,10 @@ class GameController extends ChangeNotifier {
     'crosses': crosses.toList(),
     'doneClues': doneClues.toList(),
     'locked': locked.toList(),
+    'notes': {
+      for (final MapEntry(:key, :value) in notes.entries)
+        if (value.isNotEmpty) '$key': value.toList()..sort(),
+    },
     'hints': hints,
     'wrongAccusations': wrongAccusations,
     'elapsedMs': elapsed.inMilliseconds,
@@ -92,7 +111,12 @@ class GameController extends ChangeNotifier {
 
   /// People placed by a hint: right and can't be moved.
   final Set<int> locked = {};
-  final List<(List<int?>, Set<int>)> _history = [];
+
+  /// Pencil marks: square → people who might have been there.
+  final Map<int, Set<int>> notes = {};
+  Set<int> notesAt(int cell) => notes[cell] ?? const {};
+
+  final List<(List<int?>, Set<int>, Map<int, Set<int>>)> _history = [];
   final Stopwatch _watch = Stopwatch()..start();
   final Duration _elapsedBefore;
 
@@ -109,7 +133,9 @@ class GameController extends ChangeNotifier {
   }
 
   int? selected;
-  bool crossMode = false;
+  InputMode mode = InputMode.place;
+  bool get crossMode => mode == InputMode.cross;
+  bool get notesMode => mode == InputMode.notes;
   int hints = 0;
   int wrongAccusations = 0;
   Phase phase = Phase.placing;
@@ -153,13 +179,22 @@ class GameController extends ChangeNotifier {
   }
 
   void _save() {
-    _history.add(([...placement], {...crosses}));
+    _history.add((
+      [...placement],
+      {...crosses},
+      {
+        for (final e in notes.entries) e.key: {...e.value},
+      },
+    ));
     if (_history.length > 200) _history.removeAt(0);
   }
 
   void undo() {
     if (!canUndo) return;
-    final (p, x) = _history.removeLast();
+    final (p, x, n) = _history.removeLast();
+    notes
+      ..clear()
+      ..addAll(n);
     for (var i = 0; i < p.length; i++) {
       placement[i] = p[i];
     }
@@ -172,13 +207,19 @@ class GameController extends ChangeNotifier {
   void select(int? person) {
     if (phase != Phase.placing) return;
     selected = selected == person ? null : person;
-    crossMode = false;
+    // Picking someone leaves cross-out mode; notes mode needs a person.
+    if (crossMode) mode = InputMode.place;
     notifyListeners();
   }
 
   void toggleCrossMode() {
-    crossMode = !crossMode;
+    mode = crossMode ? InputMode.place : InputMode.cross;
     if (crossMode) selected = null;
+    notifyListeners();
+  }
+
+  void toggleNotesMode() {
+    mode = notesMode ? InputMode.place : InputMode.notes;
     notifyListeners();
   }
 
@@ -193,13 +234,38 @@ class GameController extends ChangeNotifier {
     final here = personAt(cell);
     final sel = selected;
 
+    if (notesMode) {
+      if (here != null) {
+        notifyListeners();
+        return TapResult.ok;
+      }
+      if (sel == null) {
+        notifyListeners();
+        return TapResult.needsSuspect;
+      }
+      if (!board.standable(cell)) {
+        notifyListeners();
+        return TapResult.blocked;
+      }
+      _save();
+      final marks = notes.putIfAbsent(cell, () => {});
+      if (!marks.remove(sel)) marks.add(sel);
+      if (marks.isEmpty) notes.remove(cell);
+      crosses.remove(cell);
+      notifyListeners();
+      return TapResult.ok;
+    }
+
     if (crossMode || (sel == null && here == null)) {
       if (here != null) {
         notifyListeners();
         return TapResult.ok;
       }
       _save();
-      crosses.contains(cell) ? crosses.remove(cell) : crosses.add(cell);
+      if (!crosses.remove(cell)) {
+        crosses.add(cell);
+        notes.remove(cell); // ruled out: its pencil marks go too
+      }
       notifyListeners();
       return TapResult.ok;
     }
@@ -300,6 +366,7 @@ class GameController extends ChangeNotifier {
       if (!locked.contains(p)) placement[p] = null;
     }
     crosses.clear();
+    notes.clear();
     doneClues.clear();
     selected = null;
     notifyListeners();

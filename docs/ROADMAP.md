@@ -29,7 +29,7 @@ search before designing, run its pre-delivery checklist before committing.
 
 ## C. Gameplay
 
-- [ ] 8. Pencil notes: small candidate initials per square (saved, undoable).
+- [x] 8. Pencil notes: small candidate initials per square (saved, undoable).
 - [ ] 9. Reasoning hints: `lib/game/deducer.dart` with human techniques; the
       hint explains one deduction and highlights the squares, and only reveals
       a person when no deduction is found. Grade case difficulty by technique.

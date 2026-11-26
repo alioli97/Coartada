@@ -171,6 +171,9 @@ class _Cell extends StatelessWidget {
     final person = c.personAt(index);
     final scheme = Theme.of(context).colorScheme;
     final crossed = c.crosses.contains(index);
+    final marks = person == null && !crossed
+        ? (c.notesAt(index).toList()..sort())
+        : const <int>[];
 
     Color? ring;
     if (person != null) {
@@ -195,6 +198,8 @@ class _Cell extends StatelessWidget {
         p.name(person)
       else if (crossed)
         strings.crossed
+      else if (marks.isNotEmpty)
+        strings.notesLabel([for (final m in marks) p.name(m)])
       else
         strings.empty,
     ];
@@ -212,14 +217,40 @@ class _Cell extends StatelessWidget {
             children: [
               // A rug is floor: it stays full size under whoever stands on
               // it. A chair shrinks to a corner badge when occupied.
-              if (f == Furniture.rug)
-                FurnitureGlyph(f, size: size * 0.86)
-              else if (f != Furniture.none && person == null)
-                FurnitureGlyph(f, size: size * 0.66)
-              else if (f == Furniture.chair)
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: FurnitureGlyph(f, size: size * 0.36),
+              // Furniture fades behind pencil marks so they stay legible.
+              Opacity(
+                opacity: marks.isEmpty ? 1 : 0.3,
+                child: f == Furniture.rug
+                    ? FurnitureGlyph(f, size: size * 0.86)
+                    : f != Furniture.none && person == null
+                    ? FurnitureGlyph(f, size: size * 0.66)
+                    : f == Furniture.chair
+                    ? Align(
+                        alignment: Alignment.bottomRight,
+                        child: FurnitureGlyph(f, size: size * 0.36),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              if (marks.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.all(size * 0.06),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    runAlignment: WrapAlignment.center,
+                    spacing: size * 0.04,
+                    children: [
+                      for (final m in marks)
+                        Text(
+                          p.name(m)[0],
+                          style: TextStyle(
+                            fontSize: size * 0.25,
+                            height: 1.1,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               if (crossed && person == null)
                 Icon(

@@ -87,7 +87,7 @@ class _GameScreenState extends State<GameScreen>
 
   String _progressKey() =>
       '${game.placement}|${game.crosses}|${game.doneClues}|'
-      '${game.hints}|${game.wrongAccusations}|${game.phase}';
+      '${game.notes}|${game.hints}|${game.wrongAccusations}|${game.phase}';
 
   void _persist() {
     if (game.phase == Phase.solved) {
@@ -122,6 +122,8 @@ class _GameScreenState extends State<GameScreen>
     switch (game.tap(cell)) {
       case TapResult.blocked:
         _snack(s.blocked);
+      case TapResult.needsSuspect:
+        _snack(s.pickForNotes);
       case TapResult.locked || TapResult.ok:
         break;
     }
@@ -647,6 +649,12 @@ class _ActionBar extends StatelessWidget {
                 label: strings.crossOut,
                 active: game.crossMode,
                 onTap: placing ? game.toggleCrossMode : null,
+              ),
+              _BarButton(
+                icon: Icons.edit_outlined,
+                label: strings.notes,
+                active: game.notesMode,
+                onTap: placing ? game.toggleNotesMode : null,
               ),
               _BarButton(
                 icon: Icons.lightbulb_outline,

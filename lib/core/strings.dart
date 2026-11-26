@@ -101,6 +101,11 @@ class Strings {
     'Toca una casella buida sense ningú seleccionat, o fes servir el mode Ratllar, per descartar-la amb una X.',
     'Tap an empty square with nobody selected, or use Cross out mode, to rule it out with an X.',
   );
+  String get controlNotes => _tr(
+    'Con el modo Notas, elige un sospechoso y toca casillas para apuntar su inicial donde podría estar. Vuelve a tocar para borrarla.',
+    'Amb el mode Notes, tria un sospitós i toca caselles per apuntar-hi la inicial on podria ser. Torna a tocar per esborrar-la.',
+    'In Notes mode, pick a suspect and tap squares to pencil in their initial where they might be. Tap again to erase it.',
+  );
   String get control3 => _tr(
     'Toca una pista para tacharla cuando ya la hayas usado.',
     'Toca una pista per ratllar-la quan ja l\'hagis fet servir.',
@@ -133,6 +138,14 @@ class Strings {
   String get undo => _tr('Deshacer', 'Desfer', 'Undo');
   String get placed => _tr('colocado', 'col·locat', 'placed');
   String get crossOut => _tr('Tachar', 'Ratllar', 'Cross out');
+  String get notes => _tr('Notas', 'Notes', 'Notes');
+  String get pickForNotes => _tr(
+    'Elige primero a quién quieres anotar.',
+    'Tria primer qui vols anotar.',
+    'Pick who to pencil in first.',
+  );
+  String notesLabel(List<String> names) =>
+      _tr('notas: ', 'notes: ', 'notes: ') + names.join(', ');
   String get hint => _tr('Pista', 'Ajuda', 'Hint');
   String get check => _tr('Comprobar', 'Comprovar', 'Check');
   String get restart =>

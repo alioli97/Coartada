@@ -57,6 +57,7 @@ class HowToPlayScreen extends StatelessWidget {
                 section(s.controlsTitle, [
                   (symbol(Icons.touch_app_outlined), s.control1),
                   (symbol(Icons.close), s.control2),
+                  (symbol(Icons.edit_outlined), s.controlNotes),
                   (symbol(Icons.strikethrough_s), s.control3),
                   (symbol(Icons.gavel), s.control4),
                 ]),
