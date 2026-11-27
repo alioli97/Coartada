@@ -275,10 +275,22 @@ class _GameScreenState extends State<GameScreen>
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(game.daily ? s.dailyCase : s.caseTitle(p.seed)),
                 Text(
-                  '${s.levelName(p.level)} · ${p.board.size}×${p.board.size}'
-                  '${p.board.variant == Variant.noTouch ? ' · ${s.noTouchTitle}' : ''}',
+                  game.daily ? s.dailyCase : s.caseTitle(p.seed),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  // A past daily case shows its date here: the title stays
+                  // short enough for the clock and icons.
+                  [
+                    if (game.daily &&
+                        p.seed != AppState.dailySeed(DateTime.now()))
+                      s.shortDate(AppState.dayOf(p.seed)),
+                    s.levelName(p.level),
+                    '${p.board.size}×${p.board.size}',
+                    if (p.board.variant == Variant.noTouch) s.noTouchTitle,
+                  ].join(' · '),
+                  overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),

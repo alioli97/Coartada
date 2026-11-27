@@ -33,6 +33,116 @@ class Strings {
   );
   String get howToPlay => _tr('Cómo jugar', 'Com es juga', 'How to play');
   String get stats => _tr('Estadísticas', 'Estadístiques', 'Statistics');
+  String get archive =>
+      _tr('Casos anteriores', 'Casos anteriors', 'Past cases');
+  String get archiveIntro => _tr(
+    'Los casos del día de los últimos 30 días. Cuentan en tus estadísticas, pero no en la racha.',
+    'Els casos del dia dels últims 30 dies. Compten a les estadístiques, però no a la ratxa.',
+    'Daily cases from the last 30 days. They count in your statistics, not in your streak.',
+  );
+  String get stateSolved => _tr('Resuelto', 'Resolt', 'Solved');
+  String get stateInProgress => _tr('En curso', 'En curs', 'In progress');
+  String get stateNotPlayed => _tr('Sin jugar', 'Sense jugar', 'Not played');
+  String get today => _tr('Hoy', 'Avui', 'Today');
+  String get yesterday => _tr('Ayer', 'Ahir', 'Yesterday');
+
+  static const _weekdays = {
+    'es': [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo',
+    ],
+    'ca': [
+      'dilluns',
+      'dimarts',
+      'dimecres',
+      'dijous',
+      'divendres',
+      'dissabte',
+      'diumenge',
+    ],
+    'en': [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ],
+  };
+  static const _months = {
+    'es': [
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre',
+    ],
+    'ca': [
+      'gener',
+      'febrer',
+      'març',
+      'abril',
+      'maig',
+      'juny',
+      'juliol',
+      'agost',
+      'setembre',
+      'octubre',
+      'novembre',
+      'desembre',
+    ],
+    'en': [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ],
+  };
+
+  String _month(DateTime d) => (_months[lang] ?? _months['es']!)[d.month - 1];
+
+  /// "de noviembre" / "de novembre" / "d'abril" (Catalan elides before a vowel).
+  String _ofMonth(DateTime d) {
+    final m = _month(d);
+    if (lang == 'ca' && 'aeiou'.contains(m[0])) return "d'$m";
+    return 'de $m';
+  }
+
+  /// "jueves, 26 de noviembre" / "dijous, 26 de novembre" / "Thursday, 26 November".
+  String longDate(DateTime d) {
+    final wd = (_weekdays[lang] ?? _weekdays['es']!)[d.weekday - 1];
+    return lang == 'en'
+        ? '$wd, ${d.day} ${_month(d)}'
+        : '$wd, ${d.day} ${_ofMonth(d)}';
+  }
+
+  /// "26 nov." / "26 nov." / "26 Nov".
+  String shortDate(DateTime d) {
+    final m = _month(d).substring(0, 3);
+    return lang == 'en' ? '${d.day} $m' : '${d.day} $m.';
+  }
+
   String get currentStreak =>
       _tr('Racha actual', 'Ratxa actual', 'Current streak');
   String get bestStreak => _tr('Mejor racha', 'Millor ratxa', 'Best streak');

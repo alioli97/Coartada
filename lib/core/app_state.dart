@@ -34,6 +34,7 @@ class AppState extends ChangeNotifier {
   static const _kNoTouch = 'variant_no_touch';
   static const _kStats = 'stats';
   static const _kDaily = 'daily_solved';
+  static const _kDailyDone = 'daily_done';
   static const _kSavedGame = 'saved_game';
   static const _kStreak = 'daily_streak';
   static const _kHaptics = 'haptics';
@@ -133,7 +134,23 @@ class AppState extends ChangeNotifier {
   static int dailySeed(DateTime now) =>
       now.year * 10000 + now.month * 100 + now.day;
 
-  bool dailySolved(DateTime now) => _prefs.getInt(_kDaily) == dailySeed(now);
+  bool dailySolved(DateTime now) => dailyDone(dailySeed(now));
+
+  /// Whether the daily case of [day] (yyyymmdd) was ever solved. Older
+  /// versions only kept the last one (`daily_solved`).
+  bool dailyDone(int day) =>
+      _prefs.getInt(_kDaily) == day ||
+      (_prefs.getStringList(_kDailyDone)?.contains('$day') ?? false);
+
+  /// The last [count] days, newest (today) first, as yyyymmdd.
+  static List<int> recentDays(DateTime now, {int count = 30}) => [
+    for (var i = 0; i < count; i++)
+      dailySeed(DateTime(now.year, now.month, now.day - i)),
+  ];
+
+  /// The date of a daily case's seed (yyyymmdd).
+  static DateTime dayOf(int seed) =>
+      DateTime(seed ~/ 10000, seed ~/ 100 % 100, seed % 100);
 
   void recordSolved(
     Puzzle p,
@@ -161,6 +178,8 @@ class AppState extends ChangeNotifier {
     );
     if (daily) {
       _prefs.setInt(_kDaily, p.seed);
+      final done = {...?_prefs.getStringList(_kDailyDone), '${p.seed}'};
+      _prefs.setStringList(_kDailyDone, done.toList()..sort());
       // Only today's case on its own day counts for the streak.
       if (p.seed == dailySeed(now ?? DateTime.now())) _extendStreak(p.seed);
     }

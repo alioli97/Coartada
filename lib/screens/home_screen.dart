@@ -8,6 +8,7 @@ import '../game/game_controller.dart';
 import '../game/generator.dart';
 import '../game/model.dart';
 import '../widgets/settings_sheet.dart';
+import 'archive_screen.dart';
 import 'game_screen.dart';
 import 'how_to_play_screen.dart';
 import 'stats_screen.dart';
@@ -133,7 +134,18 @@ class HomeScreen extends StatelessWidget {
                           daily: true,
                         ),
                 ),
-                const SizedBox(height: 28),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => _go(
+                      context,
+                      ArchiveScreen(appState: appState, now: now),
+                    ),
+                    icon: const Icon(Icons.history),
+                    label: Text(s.archive),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Semantics(
                   header: true,
                   child: Text(s.newCase, style: theme.textTheme.titleLarge),
