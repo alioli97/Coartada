@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/app_state.dart';
+import '../core/result_share.dart';
 import '../core/strings.dart';
 import '../game/game_controller.dart';
 import '../game/generator.dart';
@@ -22,6 +23,7 @@ class GameScreen extends StatefulWidget {
     required this.appState,
     required Puzzle puzzle,
     bool daily = false,
+    this.share = shareWithPlatform,
   }) : controller = GameController(puzzle, daily: daily),
        resumed = false;
 
@@ -30,9 +32,13 @@ class GameScreen extends StatefulWidget {
     super.key,
     required this.appState,
     required this.controller,
+    this.share = shareWithPlatform,
   }) : resumed = true;
 
   final AppState appState;
+
+  /// Sends the result text; tests pass a fake.
+  final ShareText share;
   final GameController controller;
 
   /// A resumed game is the saved one, so leaving it always updates the save
@@ -224,6 +230,22 @@ class _GameScreenState extends State<GameScreen>
             const SizedBox(height: 16),
             _StatRow(label: s.time, value: formatDuration(game.elapsed)),
             _StatRow(label: s.hintsUsed, value: '${game.hints}'),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: _ShareButton(
+                label: s.share,
+                onShare: () => widget.share(
+                  resultShareText(
+                    s,
+                    p,
+                    daily: game.daily,
+                    elapsed: game.elapsed,
+                    hints: game.hints,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
         actions: [
@@ -856,6 +878,36 @@ class _BarButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Opens the share sheet; disabled while it's open so one tap shares once.
+class _ShareButton extends StatefulWidget {
+  const _ShareButton({required this.label, required this.onShare});
+  final String label;
+  final Future<void> Function() onShare;
+
+  @override
+  State<_ShareButton> createState() => _ShareButtonState();
+}
+
+class _ShareButtonState extends State<_ShareButton> {
+  bool _busy = false;
+
+  Future<void> _tap() async {
+    setState(() => _busy = true);
+    try {
+      await widget.onShare();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton.icon(
+    onPressed: _busy ? null : _tap,
+    icon: const Icon(Icons.share_outlined),
+    label: Text(widget.label),
+  );
 }
 
 class _StatRow extends StatelessWidget {

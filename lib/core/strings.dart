@@ -390,6 +390,15 @@ class Strings {
   String get time => _tr('Tiempo', 'Temps', 'Time');
   String get hintsUsed => _tr('Pistas usadas', 'Ajudes', 'Hints used');
   String get anotherCase => _tr('Otro caso', 'Un altre cas', 'Another case');
+  String get share => _tr('Compartir', 'Compartir', 'Share');
+  String hintCount(int n) => n == 1
+      ? _tr('1 ayuda', '1 ajuda', '1 hint')
+      : _tr('$n ayudas', '$n ajudes', '$n hints');
+  String get shareInvite => _tr(
+    '¿Sabrías decir quién fue?',
+    'Sabries dir qui ha estat?',
+    'Can you tell who did it?',
+  );
   String get backHome => _tr('Inicio', 'Inici', 'Home');
   String get selectHint => _tr(
     'Elige un sospechoso y toca una casilla.',
