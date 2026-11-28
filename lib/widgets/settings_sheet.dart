@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/app_state.dart';
 import '../core/strings.dart';
+import '../screens/about_screen.dart';
 
 Future<void> showSettingsSheet(BuildContext context, AppState appState) {
   return showModalBottomSheet<void>(
@@ -76,6 +77,18 @@ Future<void> showSettingsSheet(BuildContext context, AppState appState) {
                   subtitle: Text(s.visualHelpBody),
                   value: appState.visualHelp,
                   onChanged: (on) => appState.visualHelp = on,
+                ),
+                const Divider(height: 24),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(s.about),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AboutScreen(appState: appState),
+                    ),
+                  ),
                 ),
               ],
             ),

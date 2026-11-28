@@ -39,6 +39,10 @@ CI (`.github/workflows/ci.yml`) checks formatting (`dart format lib test`), runs
 
 App icon, adaptive/themed icons, Play Store icon and launch screen: see `branding/README.md`. The icon art is a Dart painter rendered by `flutter test tool/branding/render_icons_test.dart` (kept out of `test/`, so CI doesn't run it); then `dart run flutter_launcher_icons` / `dart run flutter_native_splash:create`, and revert the unrelated `project.pbxproj` / `Info.plist` changes those tools make. Display name "Coartada" on Android (`android:label`), iOS (`CFBundleName`, `CFBundleDisplayName`) and web (`manifest.json`).
 
+## Legal and support
+
+`site/` (privacy policy, support FAQ, landing; en/es/ca, app colors) is published by `.github/workflows/pages.yml` to https://alioli97.github.io/Coartada/ (owner enables Settings → Pages → Source: GitHub Actions). Keep the privacy policy in sync with what `AppState` stores (the app never goes online) and the FAQ's button names with `Strings`. The About screen (`lib/screens/about_screen.dart`, from the settings sheet) shows the icon (`lib/widgets/app_icon.dart`, the same painter the branding tool renders), `appVersion` (`lib/core/app_info.dart`; `test/about_test.dart` checks it against pubspec), links opened through an injectable `OpenLink` (`url_launcher`; a failure shows the address) and `showLicensePage`.
+
 ## UI rules (from UI UX Pro Max checklist)
 
 - Touch targets ≥ 48dp. Board squares are ~48.7dp on a 7×7 board at 375px wide (18dp label strip, 8dp board gutter while other content keeps 16dp via `_gutter`); `test/board_size_test.dart` guards it for every level. Squares never go below `BoardView.minSquare` (48dp): when the board doesn't fit (8×8 on a phone) it becomes `_ZoomableBoard` — InteractiveViewer at 48dp squares, one-finger pan, pinch, and a "Whole board / Zoom in" button so zoom never needs two fingers. `GameColors.roomTints` must have at least as many tints as the biggest level has rooms (7).

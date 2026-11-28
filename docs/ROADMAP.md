@@ -56,7 +56,7 @@ search before designing, run its pre-delivery checklist before committing.
 
 - [x] 16. Branding: app icon, splash (`flutter_launcher_icons`,
       `flutter_native_splash`), "Coartada" display name on Android and iOS.
-- [ ] 17. Privacy policy and support page in `site/` (GitHub Pages workflow);
+- [x] 17. Privacy policy and support page in `site/` (GitHub Pages workflow);
       "About" screen with licenses.
 - [ ] 18. Release builds: signed Android workflow, iOS workflow on a macOS
       runner to TestFlight, `docs/RELEASE.md` (secrets set by the owner).
