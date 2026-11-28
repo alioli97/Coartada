@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,9 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   registerFontLicenses();
+  // The board needs the phone upright (landscape leaves no room for it).
+  // Android ignores this on large screens, where there is room.
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final prefs = await SharedPreferences.getInstance();
   runApp(CoartadaApp(appState: AppState(prefs)));
 }

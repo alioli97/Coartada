@@ -1,0 +1,115 @@
+name: Android
+
+# Builds the release APK and uploads it as a downloadable artifact.
+# Signed with the release key when the ANDROID_KEYSTORE_BASE64 and
+# ANDROID_KEYSTORE_PASSWORD secrets exist; otherwise with a debug key (such an
+# APK cannot update an install signed with the release key).
+# With the release key it also builds the Android App Bundle (.aab) for Google
+# Play, uploaded as a separate artifact together with the R8 mapping file.
+# Play rejects debug-signed bundles, so no AAB is built without the secrets.
+# See docs/RELEASE.md, "Android".
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - android/**
+      - pubspec.yaml
+      - pubspec.lock
+      - .github/workflows/apk.yml
+  workflow_dispatch:
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.50.0
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::No signing secrets: the APK is signed with a debug key."
+            echo "SIGNING=debug" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          cat > android/key.properties <<EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEYSTORE_PASSWORD
+          keyAlias=coartada
+          storeFile=$RUNNER_TEMP/release.jks
+          EOF
+          echo "SIGNING=release" >> "$GITHUB_ENV"
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Check the release manifest
+        # The privacy policy promises the app never goes online: the release
+        # build must not ask for the INTERNET permission.
+        run: |
+          manifest=build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml
+          [ -f "$manifest" ] || manifest=$(find build/app/intermediates -path '*release*' -name AndroidManifest.xml | grep merged | head -1)
+          echo "Manifest: $manifest"
+          if grep -q 'android.permission.INTERNET' "$manifest"; then
+            echo "::error::The release build asks for INTERNET; update the privacy policy or remove it."; exit 1
+          fi
+
+      - name: Name the APK after the version
+        run: |
+          version=$(grep '^version:' pubspec.yaml | awk '{print $2}' | tr '+' '-')
+          name="Coartada-$version-$SIGNING"
+          mv build/app/outputs/flutter-apk/app-release.apk "$name.apk"
+          echo "APK_NAME=$name" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_NAME }}.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Build App Bundle (Google Play)
+        if: env.SIGNING == 'release'
+        run: |
+          flutter build appbundle --release
+          mkdir -p play
+          mv build/app/outputs/bundle/release/app-release.aab "play/$APK_NAME.aab"
+          mapping=build/app/outputs/mapping/release/mapping.txt
+          if [ -f "$mapping" ]; then cp "$mapping" play/mapping.txt; fi
+
+      - uses: actions/upload-artifact@v7
+        if: env.SIGNING == 'release'
+        with:
+          name: ${{ env.APK_NAME }}-play
+          path: play/
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Remove the signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks" android/key.properties

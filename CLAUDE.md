@@ -39,6 +39,10 @@ CI (`.github/workflows/ci.yml`) checks formatting (`dart format lib test`), runs
 
 App icon, adaptive/themed icons, Play Store icon and launch screen: see `branding/README.md`. The icon art is a Dart painter rendered by `flutter test tool/branding/render_icons_test.dart` (kept out of `test/`, so CI doesn't run it); then `dart run flutter_launcher_icons` / `dart run flutter_native_splash:create`, and revert the unrelated `project.pbxproj` / `Info.plist` changes those tools make. Display name "Coartada" on Android (`android:label`), iOS (`CFBundleName`, `CFBundleDisplayName`) and web (`manifest.json`).
 
+## Release
+
+`docs/RELEASE.md`: ids (`com.alioli97.coartada`, final), versioning (pubspec + `appVersion`), Android signing (`android/key.properties`, gitignored; debug-key fallback) and `.github/workflows/apk.yml` (APK artifact, AAB with secrets, fails if the release manifest asks for INTERNET), `.github/workflows/ios.yml` (unsigned check on push/PR, TestFlight by hand). Secrets are the owner's. The app is portrait-only (`SystemChrome` in `main.dart`, iOS `Info.plist`) and iPhone-only on iOS.
+
 ## Legal and support
 
 `site/` (privacy policy, support FAQ, landing; en/es/ca, app colors) is published by `.github/workflows/pages.yml` to https://alioli97.github.io/Coartada/ (owner enables Settings → Pages → Source: GitHub Actions). Keep the privacy policy in sync with what `AppState` stores (the app never goes online) and the FAQ's button names with `Strings`. The About screen (`lib/screens/about_screen.dart`, from the settings sheet) shows the icon (`lib/widgets/app_icon.dart`, the same painter the branding tool renders), `appVersion` (`lib/core/app_info.dart`; `test/about_test.dart` checks it against pubspec), links opened through an injectable `OpenLink` (`url_launcher`; a failure shows the address) and `showLicensePage`.

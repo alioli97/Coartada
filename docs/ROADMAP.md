@@ -58,7 +58,7 @@ search before designing, run its pre-delivery checklist before committing.
       `flutter_native_splash`), "Coartada" display name on Android and iOS.
 - [x] 17. Privacy policy and support page in `site/` (GitHub Pages workflow);
       "About" screen with licenses.
-- [ ] 18. Release builds: signed Android workflow, iOS workflow on a macOS
+- [x] 18. Release builds: signed Android workflow, iOS workflow on a macOS
       runner to TestFlight, `docs/RELEASE.md` (secrets set by the owner).
 - [ ] 19. Store listing texts (es/ca/en) in `store/` and screenshots rendered by
       a screenshots test.
