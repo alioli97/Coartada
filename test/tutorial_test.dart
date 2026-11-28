@@ -43,7 +43,7 @@ void main() {
   ) async {
     SharedPreferences.setMockInitialValues({});
     final app = AppState(await SharedPreferences.getInstance());
-    await tester.pumpWidget(CoartadaApp(appState: app));
+    await tester.pumpWidget(PesquisaApp(appState: app));
     expect(find.text('¿Primera vez?'), findsOneWidget);
     await tester.tap(find.byTooltip('Ahora no'));
     await tester.pump();

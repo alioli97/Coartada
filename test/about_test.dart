@@ -52,11 +52,11 @@ void main() {
     await tester.tap(find.byTooltip('Ajustes'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('Acerca de Coartada'),
+      find.text('Acerca de Pesquisa'),
       100,
       scrollable: find.byType(Scrollable).last,
     );
-    await tester.tap(find.text('Acerca de Coartada'));
+    await tester.tap(find.text('Acerca de Pesquisa'));
     await tester.pumpAndSettle();
     expect(find.byType(AboutScreen), findsOneWidget);
     expect(find.text('Versión $appVersion'), findsOneWidget);

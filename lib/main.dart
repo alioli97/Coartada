@@ -14,11 +14,11 @@ void main() async {
   // Android ignores this on large screens, where there is room.
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final prefs = await SharedPreferences.getInstance();
-  runApp(CoartadaApp(appState: AppState(prefs)));
+  runApp(PesquisaApp(appState: AppState(prefs)));
 }
 
-class CoartadaApp extends StatelessWidget {
-  const CoartadaApp({super.key, required this.appState});
+class PesquisaApp extends StatelessWidget {
+  const PesquisaApp({super.key, required this.appState});
 
   final AppState appState;
 
@@ -27,7 +27,7 @@ class CoartadaApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: appState,
       builder: (context, _) => MaterialApp(
-        title: 'Coartada',
+        title: 'Pesquisa',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),

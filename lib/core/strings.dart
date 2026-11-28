@@ -220,7 +220,7 @@ class Strings {
 
   // About
   String get about =>
-      _tr('Acerca de Coartada', 'Sobre Coartada', 'About Coartada');
+      _tr('Acerca de Pesquisa', 'Sobre Pesquisa', 'About Pesquisa');
   String version(String v) => _tr('Versión $v', 'Versió $v', 'Version $v');
   String get aboutBody => _tr(
     'Un juego original de deducción. Cada caso lo genera la app y tiene una sola solución, a la que se llega razonando, sin adivinar.',

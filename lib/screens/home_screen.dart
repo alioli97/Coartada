@@ -76,7 +76,7 @@ class HomeScreen extends StatelessWidget {
                       child: Semantics(
                         header: true,
                         child: Text(
-                          'Coartada',
+                          'Pesquisa',
                           style: theme.textTheme.displaySmall,
                         ),
                       ),

@@ -2,7 +2,7 @@
 
 ## Project
 
-Coartada (Dart package `coartada`, app id `com.alioli97.coartada`): an original logic-deduction game in Flutter. A house map is an N×N grid split into rooms, with furniture. The player places N people (one per row and per column, never on tables/plants/bookshelves) using clues, then names the culprit: the only person sharing the victim's room. Cases are **generated**, not hand-written, and always have exactly one solution. It is inspired by the "sudoku + murder mystery" genre but must stay original: never copy the name, cases, characters or art of existing games (e.g. Murdoku).
+Pesquisa (named Coartada until the store listing: that name was taken by another mystery game, so the Dart package `coartada`, app id `com.alioli97.coartada` and local folder keep the old name, which users never see): an original logic-deduction game in Flutter. A house map is an N×N grid split into rooms, with furniture. The player places N people (one per row and per column, never on tables/plants/bookshelves) using clues, then names the culprit: the only person sharing the victim's room. Cases are **generated**, not hand-written, and always have exactly one solution. It is inspired by the "sudoku + murder mystery" genre but must stay original: never copy the name, cases, characters or art of existing games (e.g. Murdoku).
 
 Work plan: `docs/ROADMAP.md`. Read it before starting a step and tick the step's box in the same commit that completes it. One step = one commit on its own branch, merged into `main` with CI green; commit messages in English, Conventional Commits.
 
@@ -37,7 +37,7 @@ CI (`.github/workflows/ci.yml`) checks formatting (`dart format lib test`), runs
 
 ## Branding
 
-App icon, adaptive/themed icons, Play Store icon and launch screen: see `branding/README.md`. The icon art is a Dart painter rendered by `flutter test tool/branding/render_icons_test.dart` (kept out of `test/`, so CI doesn't run it); then `dart run flutter_launcher_icons` / `dart run flutter_native_splash:create`, and revert the unrelated `project.pbxproj` / `Info.plist` changes those tools make. Display name "Coartada" on Android (`android:label`), iOS (`CFBundleName`, `CFBundleDisplayName`) and web (`manifest.json`).
+App icon, adaptive/themed icons, Play Store icon and launch screen: see `branding/README.md`. The icon art is a Dart painter rendered by `flutter test tool/branding/render_icons_test.dart` (kept out of `test/`, so CI doesn't run it); then `dart run flutter_launcher_icons` / `dart run flutter_native_splash:create`, and revert the unrelated `project.pbxproj` / `Info.plist` changes those tools make. Display name "Pesquisa" on Android (`android:label`), iOS (`CFBundleName`, `CFBundleDisplayName`) and web (`manifest.json`).
 
 ## Release
 
@@ -49,7 +49,7 @@ App icon, adaptive/themed icons, Play Store icon and launch screen: see `brandin
 
 ## Legal and support
 
-`site/` (privacy policy, support FAQ, landing; en/es/ca, app colors) is published by `.github/workflows/pages.yml` to https://alioli97.github.io/Coartada/ (owner enables Settings → Pages → Source: GitHub Actions). Keep the privacy policy in sync with what `AppState` stores (the app never goes online) and the FAQ's button names with `Strings`. The About screen (`lib/screens/about_screen.dart`, from the settings sheet) shows the icon (`lib/widgets/app_icon.dart`, the same painter the branding tool renders), `appVersion` (`lib/core/app_info.dart`; `test/about_test.dart` checks it against pubspec), links opened through an injectable `OpenLink` (`url_launcher`; a failure shows the address) and `showLicensePage`.
+`site/` (privacy policy, support FAQ, landing; en/es/ca, app colors) is published by `.github/workflows/pages.yml` to https://alioli97.github.io/Pesquisa/ (owner enables Settings → Pages → Source: GitHub Actions). Keep the privacy policy in sync with what `AppState` stores (the app never goes online) and the FAQ's button names with `Strings`. The About screen (`lib/screens/about_screen.dart`, from the settings sheet) shows the icon (`lib/widgets/app_icon.dart`, the same painter the branding tool renders), `appVersion` (`lib/core/app_info.dart`; `test/about_test.dart` checks it against pubspec), links opened through an injectable `OpenLink` (`url_launcher`; a failure shows the address) and `showLicensePage`.
 
 ## UI rules (from UI UX Pro Max checklist)
 

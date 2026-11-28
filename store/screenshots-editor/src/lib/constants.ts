@@ -193,11 +193,11 @@ export const THEMES: Record<string, Theme> = {
     accentAlt: "#0A0B0D",
     muted: "#A3A8AF",
   },
-  // Coartada: Magazine Cover Editorial with the app's forest green as the one
+  // Pesquisa: Magazine Cover Editorial with the app's forest green as the one
   // accent (6.0:1 on paper; cream on it 6.2:1).
   "coartada-editorial": {
     id: "coartada-editorial",
-    name: "Coartada Editorial",
+    name: "Pesquisa Editorial",
     bg: "#F1EBE1",
     bgAlt: "#166534",
     fg: "#1A1714",

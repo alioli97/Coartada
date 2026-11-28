@@ -1,6 +1,6 @@
 # Release guide
 
-Coartada ships to Google Play and the App Store. Builds come from GitHub Actions:
+Pesquisa ships to Google Play and the App Store. Builds come from GitHub Actions:
 `apk.yml` (Android) and `ios.yml` (iOS, on macOS runners: there is no local Mac).
 Secrets are set by the owner in GitHub → Settings → Secrets and variables → Actions;
 they never go into the repository.
@@ -10,7 +10,7 @@ they never go into the repository.
 - Android application id and iOS bundle id: `com.alioli97.coartada`.
 - **This id is final — do not change it.** Neither store allows changing it once the app is
   published: a new id is a different app (new listing, no updates for existing users).
-- Display name: "Coartada" (Android `android:label`, iOS `CFBundleDisplayName`).
+- Display name: "Pesquisa" (Android `android:label`, iOS `CFBundleDisplayName`).
 
 ## Versioning
 
@@ -62,11 +62,11 @@ reset it, but it's slow.
 `.github/workflows/apk.yml` runs on every push to `main`, on PRs that touch the Android build,
 and by hand (Actions → Android → Run workflow). It:
 
-- builds the release APK and uploads it as the artifact `Coartada-<version>-<release|debug>`
+- builds the release APK and uploads it as the artifact `Pesquisa-<version>-<release|debug>`
   (kept 30 days), for installing by hand;
 - fails if the release manifest asks for the `INTERNET` permission (the privacy policy says
   the app never goes online);
-- with the signing secrets, also builds the App Bundle and uploads `Coartada-<version>-release-play`
+- with the signing secrets, also builds the App Bundle and uploads `Pesquisa-<version>-release-play`
   with the `.aab` (upload it to Play) and `mapping.txt` (upload it as the release's
   deobfuscation file).
 
@@ -80,7 +80,7 @@ and the Android SDK `cmdline-tools` component).
 2. **Play App Signing**: let Google generate the app signing key; the keystore above is the
    upload key.
 3. **App content**:
-   - Privacy policy: https://alioli97.github.io/Coartada/privacy/
+   - Privacy policy: https://alioli97.github.io/Pesquisa/privacy/
    - Data safety: no data collected, no data shared (everything stays on the device; the
      release build has no INTERNET permission).
    - Ads: no. No in-app purchases.
@@ -121,8 +121,8 @@ Only the bundle id, the app and its profile are new:
 1. Register the bundle id `com.alioli97.coartada` (Certificates, IDs & Profiles →
    Identifiers), with no extra capabilities.
 2. Create the app in App Store Connect with that bundle id (primary language Spanish,
-   name "Coartada"; if the name is taken, a subtitle-style name such as
-   "Coartada: casos de lógica").
+   name "Pesquisa"; if the name is taken, the Google Play title
+   "Pesquisa: casos de lógica").
 3. Profiles → + → **App Store Connect**, bundle id `com.alioli97.coartada`, the existing
    Apple Distribution certificate; download the `.mobileprovision`.
 4. Secrets in this repository:

@@ -18,6 +18,6 @@ public/fonts/imported/*
 .e2e/
 
 
-# Coartada: Playfair Display (OFL, the app's own heading font) is ours to ship.
+# Pesquisa: Playfair Display (OFL, the app's own heading font) is ours to ship.
 !public/fonts/imported/playfairdisplaybold.ttf
 !public/fonts/imported/OFL-PlayfairDisplay.txt

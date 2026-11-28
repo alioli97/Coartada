@@ -106,7 +106,7 @@ void main() {
 
   testWidgets('moves are saved; Continue restores them', (tester) async {
     final app = await _state();
-    await tester.pumpWidget(CoartadaApp(appState: app));
+    await tester.pumpWidget(PesquisaApp(appState: app));
     expect(find.text('Continuar caso'), findsNothing);
 
     // Open a new 4×4 case, place someone with a hint, go back.
@@ -134,7 +134,7 @@ void main() {
     tester,
   ) async {
     final app = await _state({'saved_game': jsonEncode(_played().toJson())});
-    await tester.pumpWidget(CoartadaApp(appState: app));
+    await tester.pumpWidget(PesquisaApp(appState: app));
     await tester.tap(find.text('Aprendiz'));
     await tester.pumpAndSettle();
     await tester.pageBack();

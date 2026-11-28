@@ -82,7 +82,7 @@ jobs:
       - name: Name the APK after the version
         run: |
           version=$(grep '^version:' pubspec.yaml | awk '{print $2}' | tr '+' '-')
-          name="Coartada-$version-$SIGNING"
+          name="Pesquisa-$version-$SIGNING"
           mv build/app/outputs/flutter-apk/app-release.apk "$name.apk"
           echo "APK_NAME=$name" >> "$GITHUB_ENV"
 

@@ -1,5 +1,5 @@
 ## Name
-Coartada
+Pesquisa
 
 ## Subtitle
 Casos de lògica i deducció
@@ -13,7 +13,7 @@ misteri,deducció,lògica,trencaclosques,detectiu,sudoku,crim,sospitós,endevina
 ## Description
 Han trobat un cos. Vuit sospitosos, un culpable, i ningú diu la veritat. Només et queda la lògica.
 
-Coartada és un joc de deducció: cada cas és el plànol d'una casa dividit en habitacions, amb mobles i una llista de pistes. Col·loca cada sospitós al seu lloc, una persona per fila i per columna, mai sobre una taula, una planta o una prestatgeria. Quan tothom sigui al seu lloc, assenyala el culpable: l'única persona que era a soles amb la víctima.
+Pesquisa és un joc de deducció: cada cas és el plànol d'una casa dividit en habitacions, amb mobles i una llista de pistes. Col·loca cada sospitós al seu lloc, una persona per fila i per columna, mai sobre una taula, una planta o una prestatgeria. Quan tothom sigui al seu lloc, assenyala el culpable: l'única persona que era a soles amb la víctima.
 
 LÒGICA PURA, SENSE ENDEVINAR
 Cada cas té una sola solució i sempre s'hi arriba raonant. L'app genera els casos i en comprova cadascun abans d'ensenyar-te'l.
@@ -36,4 +36,4 @@ PER JUGAR AL TEU RITME
 • Tema clar i fosc, en català, castellà i anglès.
 
 SENSE ANUNCIS, SENSE COMPTES
-Coartada no recull cap dada i no es connecta a Internet. El teu progrés es queda al mòbil.
+Pesquisa no recull cap dada i no es connecta a Internet. El teu progrés es queda al mòbil.

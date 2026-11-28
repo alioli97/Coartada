@@ -11,8 +11,9 @@ consoles by hand (see the answers below and `docs/RELEASE.md`).
 | Google Play | `google-play/{es,ca,en}.md` | title, short description, full description |
 
 Primary language Spanish (Spain); add Catalan and English (U.S. / United Kingdom). Check the
-length limits with `python3 store/check.py`. The App Store name is "Coartada"; if it is taken,
-use the Google Play title ("Coartada: casos de lógica"). Keywords never repeat words already in
+length limits with `python3 store/check.py`. The App Store name is "Pesquisa" ("Coartada", the first
+name, was taken by another mystery game); if it is ever taken, use the Google Play title
+("Pesquisa: casos de lógica"). Keywords never repeat words already in
 the name or subtitle and avoid trademarks.
 
 ## Screenshots
@@ -44,10 +45,10 @@ Icon: `branding/play_store_icon_512.png` (Google Play); the App Store takes it f
   shown. Answer **None** to every violence question. If you consider the theme a mild
   fear/mystery theme, "Horror/Fear Themes: Infrequent/Mild" gives 9+; otherwise 4+.
 - **Content rights:** no third-party content (cases are generated, art is the app's own).
-- **Privacy:** policy `https://alioli97.github.io/Coartada/privacy/`; data collection
+- **Privacy:** policy `https://alioli97.github.io/Pesquisa/privacy/`; data collection
   **No, we do not collect data from this app.**
-- **Support URL:** `https://alioli97.github.io/Coartada/support/`; marketing URL (optional)
-  `https://alioli97.github.io/Coartada/`.
+- **Support URL:** `https://alioli97.github.io/Pesquisa/support/`; marketing URL (optional)
+  `https://alioli97.github.io/Pesquisa/`.
 - **Copyright:** `2026 Arnau Alio`.
 - **Price:** free, all territories. **EU DSA:** non-trader.
 - **Review notes:** paste `app-store/review-notes.txt`. Sign-in required: no.
@@ -58,4 +59,4 @@ Icon: `branding/play_store_icon_512.png` (Google Play); the App Store takes it f
 - **Data safety:** no data collected or shared; no encryption question since nothing is sent.
 - **Content rating (IARC):** puzzle game; references to a crime in text, no violence shown, no
   user interaction, no purchases. **Ads:** no. **Target audience:** 13+.
-- **Contact email:** `alio.studios.games@gmail.com`; website `https://alioli97.github.io/Coartada/`.
+- **Contact email:** `alio.studios.games@gmail.com`; website `https://alioli97.github.io/Pesquisa/`.

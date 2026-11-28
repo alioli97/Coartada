@@ -23,10 +23,10 @@ void main() {
     );
     expect(
       text,
-      'Coartada — Caso del día, 28 nov.\n'
+      'Pesquisa — Caso del día, 28 nov.\n'
       'Inspector 6×6 · 4:12 · 1 ayuda\n'
       '¿Sabrías decir quién fue?\n'
-      'alioli97.github.io/Coartada',
+      'alioli97.github.io/Pesquisa',
     );
     for (var i = 0; i < p.people; i++) {
       expect(text, isNot(contains(p.name(i))));
@@ -94,7 +94,7 @@ void main() {
     await tester.tap(find.text('Compartir')); // still open: ignored
     await tester.pump();
     expect(sent, hasLength(1));
-    expect(sent.single, startsWith('Coartada — Caso nº 11'));
+    expect(sent.single, startsWith('Pesquisa — Caso nº 11'));
 
     pending.complete();
     await tester.pumpAndSettle();

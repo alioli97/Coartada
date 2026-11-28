@@ -1,5 +1,5 @@
 1. PURPOSE AND AUDIENCE
-Coartada is an original logic puzzle game for teenagers and adults who enjoy sudoku-style deduction. Each case is a house plan split into rooms; the player places every suspect (one per row and per column, never on tables, plants or bookshelves) using written clues, then names the culprit: the only other person in the victim's room. A crime is mentioned in text only; no violence is shown.
+Pesquisa is an original logic puzzle game for teenagers and adults who enjoy sudoku-style deduction. Each case is a house plan split into rooms; the player places every suspect (one per row and per column, never on tables, plants or bookshelves) using written clues, then names the culprit: the only other person in the victim's room. A crime is mentioned in text only; no violence is shown.
 
 2. HOW TO USE THE MAIN FEATURES
 No login, credentials, network connection or sample files are needed.

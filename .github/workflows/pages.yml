@@ -1,7 +1,7 @@
 name: Pages
 
 # Publishes site/ (privacy policy and support page for the store listings) to GitHub Pages:
-# https://alioli97.github.io/Coartada/privacy/ and https://alioli97.github.io/Coartada/support/
+# https://alioli97.github.io/Pesquisa/privacy/ and https://alioli97.github.io/Pesquisa/support/
 # One-time setup by the owner: Settings → Pages → Source: GitHub Actions.
 
 on:

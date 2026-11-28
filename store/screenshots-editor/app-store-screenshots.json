@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "appName": "Coartada",
+  "appName": "Pesquisa",
   "themeId": "coartada-editorial",
   "fontId": "self-hosted",
   "connectedCanvas": true,
@@ -10,7 +10,7 @@
     "en"
   ],
   "locale": "es",
-  "device": "iphone",
+  "device": "feature-graphic",
   "orientation": "portrait",
   "appIcon": "/app-icon.png",
   "slidesByDevice": {

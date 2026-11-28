@@ -1,6 +1,6 @@
 # Roadmap
 
-Goal: publish Coartada on the App Store and Google Play. One step = one commit
+Goal: publish Pesquisa on the App Store and Google Play. One step = one commit
 on its own branch, merged into `main` with CI green. Tick each box when its
 commit lands. UI steps use the UI UX Pro Max skill (`.claude/skills/ui-ux-pro-max`):
 search before designing, run its pre-delivery checklist before committing.
@@ -55,7 +55,7 @@ search before designing, run its pre-delivery checklist before committing.
 ## F. Release
 
 - [x] 16. Branding: app icon, splash (`flutter_launcher_icons`,
-      `flutter_native_splash`), "Coartada" display name on Android and iOS.
+      `flutter_native_splash`), "Pesquisa" display name on Android and iOS.
 - [x] 17. Privacy policy and support page in `site/` (GitHub Pages workflow);
       "About" screen with licenses.
 - [x] 18. Release builds: signed Android workflow, iOS workflow on a macOS

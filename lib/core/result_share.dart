@@ -30,5 +30,5 @@ String resultShareText(
     formatDuration(elapsed),
     s.hintCount(hints),
   ].join(' · ');
-  return 'Coartada — $which\n$details\n${s.shareInvite}\n$shareLink';
+  return 'Pesquisa — $which\n$details\n${s.shareInvite}\n$shareLink';
 }

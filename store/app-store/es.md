@@ -1,5 +1,5 @@
 ## Name
-Coartada
+Pesquisa
 
 ## Subtitle
 Casos de lógica y deducción
@@ -13,7 +13,7 @@ misterio,deducción,lógica,puzle,detective,sudoku,crimen,sospechoso,acertijo,en
 ## Description
 Han encontrado un cuerpo. Ocho sospechosos, un culpable, y nadie dice la verdad. Solo te queda la lógica.
 
-Coartada es un juego de deducción: cada caso es el plano de una casa dividido en habitaciones, con muebles y una lista de pistas. Coloca a cada sospechoso en su sitio, una persona por fila y por columna, nunca sobre una mesa, una planta o una estantería. Cuando todos estén en su lugar, señala al culpable: la única persona que estaba a solas con la víctima.
+Pesquisa es un juego de deducción: cada caso es el plano de una casa dividido en habitaciones, con muebles y una lista de pistas. Coloca a cada sospechoso en su sitio, una persona por fila y por columna, nunca sobre una mesa, una planta o una estantería. Cuando todos estén en su lugar, señala al culpable: la única persona que estaba a solas con la víctima.
 
 LÓGICA PURA, SIN ADIVINAR
 Cada caso tiene una sola solución y siempre se llega razonando. La app genera los casos y comprueba cada uno antes de enseñártelo.
@@ -36,4 +36,4 @@ PARA JUGAR A TU RITMO
 • Tema claro y oscuro, en español, catalán e inglés.
 
 SIN ANUNCIOS, SIN CUENTAS
-Coartada no recoge ningún dato y no se conecta a Internet. Tu progreso se queda en tu móvil.
+Pesquisa no recoge ningún dato y no se conecta a Internet. Tu progreso se queda en tu móvil.

@@ -84,8 +84,8 @@ void main() {
 
   testWidgets('home lists the daily case and the four levels', (tester) async {
     final app = await _state();
-    await tester.pumpWidget(CoartadaApp(appState: app));
-    expect(find.text('Coartada'), findsOneWidget);
+    await tester.pumpWidget(PesquisaApp(appState: app));
+    expect(find.text('Pesquisa'), findsOneWidget);
     expect(find.text('Caso del día'), findsOneWidget);
     for (final name in ['Aprendiz', 'Detective', 'Inspector', 'Comisario']) {
       expect(find.text(name), findsWidgets);

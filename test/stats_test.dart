@@ -132,7 +132,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.pumpWidget(CoartadaApp(appState: app));
+    await tester.pumpWidget(PesquisaApp(appState: app));
     await tester.pumpAndSettle();
     // The real clock isn't 2026-11-27 here, so the streak may show 0:
     // only check the stats button is reachable from home.

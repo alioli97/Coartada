@@ -49,7 +49,7 @@ class AboutScreen extends StatelessWidget {
                 const Center(child: ExcludeSemantics(child: AppIcon(size: 88))),
                 const SizedBox(height: 16),
                 Text(
-                  'Coartada',
+                  'Pesquisa',
                   textAlign: TextAlign.center,
                   style: text.headlineMedium,
                 ),
@@ -93,7 +93,7 @@ class AboutScreen extends StatelessWidget {
                   external: false,
                   onTap: () => showLicensePage(
                     context: context,
-                    applicationName: 'Coartada',
+                    applicationName: 'Pesquisa',
                     applicationVersion: s.version(appVersion),
                     applicationIcon: const Padding(
                       padding: EdgeInsets.all(12),
