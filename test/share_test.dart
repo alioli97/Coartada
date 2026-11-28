@@ -25,7 +25,8 @@ void main() {
       text,
       'Coartada — Caso del día, 28 nov.\n'
       'Inspector 6×6 · 4:12 · 1 ayuda\n'
-      '¿Sabrías decir quién fue?',
+      '¿Sabrías decir quién fue?\n'
+      'alioli97.github.io/Coartada',
     );
     for (var i = 0; i < p.people; i++) {
       expect(text, isNot(contains(p.name(i))));

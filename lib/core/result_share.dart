@@ -1,6 +1,7 @@
 import 'package:share_plus/share_plus.dart';
 
 import '../game/model.dart';
+import 'app_info.dart';
 import 'app_state.dart';
 import 'strings.dart';
 
@@ -29,5 +30,5 @@ String resultShareText(
     formatDuration(elapsed),
     s.hintCount(hints),
   ].join(' · ');
-  return 'Coartada — $which\n$details\n${s.shareInvite}';
+  return 'Coartada — $which\n$details\n${s.shareInvite}\n$shareLink';
 }

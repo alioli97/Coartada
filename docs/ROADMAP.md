@@ -60,7 +60,7 @@ search before designing, run its pre-delivery checklist before committing.
       "About" screen with licenses.
 - [x] 18. Release builds: signed Android workflow, iOS workflow on a macOS
       runner to TestFlight, `docs/RELEASE.md` (secrets set by the owner).
-- [ ] 19. Store listing texts (es/ca/en) in `store/` and screenshots rendered by
+- [x] 19. Store listing texts (es/ca/en) in `store/` and screenshots rendered by
       a screenshots test.
 
 ## Done

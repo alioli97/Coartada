@@ -1,0 +1,18 @@
+1. PURPOSE AND AUDIENCE
+Coartada is an original logic puzzle game for teenagers and adults who enjoy sudoku-style deduction. Each case is a house plan split into rooms; the player places every suspect (one per row and per column, never on tables, plants or bookshelves) using written clues, then names the culprit: the only other person in the victim's room. A crime is mentioned in text only; no violence is shown.
+
+2. HOW TO USE THE MAIN FEATURES
+No login, credentials, network connection or sample files are needed.
+- First launch: the home screen offers a "Guided case" (Caso guiado) that teaches the rules step by step.
+- Home: "Daily case" (the same case for everyone each day), "Past cases" (last 30 days) and five levels from 4x4 to 8x8. Icons at the top: statistics, how to play, settings (language, theme, no-touch variant, vibration, visual help, About).
+- Game: pick a suspect at the bottom and tap a square to place them. "Cross out" and "Notes" mark squares, "Hint" explains the next deduction, "Check" verifies the board; when it is right the player names the culprit and can share a spoiler-free result through the system share sheet.
+- The language follows the in-app setting (Spanish by default; Catalan and English available in Settings).
+
+3. EXTERNAL SERVICES
+None. Cases are generated on the device; the app makes no network requests. There are no accounts, analytics, ads, payments or AI services. Progress is stored only on the device. The About screen links to the privacy policy and support pages (opened in the browser) and to an email address.
+
+4. REGIONAL DIFFERENCES
+The app works the same in every region. The interface is in Spanish, Catalan and English.
+
+5. REGULATED INDUSTRY
+None. It is a game with no gambling, purchases or user-generated content.

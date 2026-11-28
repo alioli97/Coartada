@@ -7,6 +7,12 @@
       "sourceType": "github",
       "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
       "computedHash": "5481f0c38e5591029134f06418ce04754d8ee3b67d40cc986c5609d3dad5b1b6"
+    },
+    "app-store-screenshots": {
+      "source": "ParthJadhav/app-store-screenshots",
+      "commit": "e889033b68f418952cc65ba897fe2b1ec63d1564",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/app-store-screenshots/SKILL.md"
     }
   }
 }
