@@ -5,8 +5,15 @@ import '../game/model.dart';
 import '../widgets/furniture_glyph.dart';
 
 class HowToPlayScreen extends StatelessWidget {
-  const HowToPlayScreen({super.key, required this.strings});
+  const HowToPlayScreen({
+    super.key,
+    required this.strings,
+    this.onPlayTutorial,
+  });
   final Strings strings;
+
+  /// Opens the guided case (from home; not offered mid-game).
+  final VoidCallback? onPlayTutorial;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +55,14 @@ class HowToPlayScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                if (onPlayTutorial != null) ...[
+                  FilledButton.icon(
+                    onPressed: onPlayTutorial,
+                    icon: const Icon(Icons.school_outlined),
+                    label: Text(s.tutorialPlay),
+                  ),
+                  const SizedBox(height: 20),
+                ],
                 section(s.rulesTitle, [
                   (symbol(Icons.grid_on), s.rule1),
                   (const FurnitureGlyph(Furniture.table, size: 24), s.rule2),

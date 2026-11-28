@@ -48,8 +48,9 @@ search before designing, run its pre-delivery checklist before committing.
 
 ## E. Tutorial
 
-- [ ] 15. Guided first case: a hand-made original 4×4 with step-by-step
-      overlays; shown on first launch, replayable from "How to play".
+- [x] 15. Guided first case: a hand-made original 4×4 with a step-by-step
+      coach; offered on home until done or dismissed (not forced, per UI UX
+      Pro Max: skippable, with Back), replayable from "How to play".
 
 ## F. Release
 

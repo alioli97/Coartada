@@ -10,7 +10,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<AppState> _state() async {
-  SharedPreferences.setMockInitialValues({});
+  SharedPreferences.setMockInitialValues({'tutorial_card_hidden': true});
   return AppState(await SharedPreferences.getInstance());
 }
 

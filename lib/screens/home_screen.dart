@@ -38,6 +38,9 @@ class HomeScreen extends StatelessWidget {
     _go(context, GameScreen.resume(appState: appState, controller: game));
   }
 
+  void _openTutorial(BuildContext context) =>
+      _go(context, GameScreen.tutorial(appState: appState));
+
   /// The game screen saves progress without notifying, so the home screen
   /// refreshes (Continue card, stats) when it closes.
   Future<void> _go(BuildContext context, Widget screen) async {
@@ -92,7 +95,10 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => HowToPlayScreen(strings: s),
+                          builder: (_) => HowToPlayScreen(
+                            strings: s,
+                            onPlayTutorial: () => _openTutorial(context),
+                          ),
                         ),
                       ),
                     ),
@@ -111,6 +117,14 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
+                if (appState.showTutorialCard) ...[
+                  _TutorialCard(
+                    strings: s,
+                    onPlay: () => _openTutorial(context),
+                    onDismiss: appState.hideTutorialCard,
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 if (saved != null) ...[
                   _ContinueCard(
                     strings: s,
@@ -182,6 +196,72 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TutorialCard extends StatelessWidget {
+  const _TutorialCard({
+    required this.strings,
+    required this.onPlay,
+    required this.onDismiss,
+  });
+  final Strings strings;
+  final VoidCallback onPlay;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Card(
+      color: scheme.secondary.withValues(alpha: 0.12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: scheme.secondary),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Icon(
+                Icons.school_outlined,
+                color: scheme.secondary,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  Text(
+                    strings.tutorialCardTitle,
+                    style: theme.textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(strings.tutorialCardBody),
+                  const SizedBox(height: 8),
+                  FilledButton.icon(
+                    onPressed: onPlay,
+                    icon: const Icon(Icons.play_arrow),
+                    label: Text(strings.tutorialPlay),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: strings.notNow,
+              icon: const Icon(Icons.close),
+              onPressed: onDismiss,
+            ),
+          ],
         ),
       ),
     );

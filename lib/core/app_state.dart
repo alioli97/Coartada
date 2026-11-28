@@ -37,6 +37,8 @@ class AppState extends ChangeNotifier {
   static const _kDailyDone = 'daily_done';
   static const _kSavedGame = 'saved_game';
   static const _kStreak = 'daily_streak';
+  static const _kTutorialDone = 'tutorial_done';
+  static const _kTutorialHidden = 'tutorial_card_hidden';
   static const _kHaptics = 'haptics';
   static const _kVisualHelp = 'visual_help';
 
@@ -75,6 +77,22 @@ class AppState extends ChangeNotifier {
   bool get visualHelp => _prefs.getBool(_kVisualHelp) ?? true;
   set visualHelp(bool on) {
     _prefs.setBool(_kVisualHelp, on);
+    notifyListeners();
+  }
+
+  /// The guided first case was completed.
+  bool get tutorialDone => _prefs.getBool(_kTutorialDone) ?? false;
+  set tutorialDone(bool v) {
+    _prefs.setBool(_kTutorialDone, v);
+    notifyListeners();
+  }
+
+  /// Home offers the guided case until it's done or dismissed.
+  bool get showTutorialCard =>
+      !tutorialDone && !(_prefs.getBool(_kTutorialHidden) ?? false);
+
+  void hideTutorialCard() {
+    _prefs.setBool(_kTutorialHidden, true);
     notifyListeners();
   }
 

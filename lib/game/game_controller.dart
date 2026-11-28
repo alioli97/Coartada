@@ -387,6 +387,35 @@ class GameController extends ChangeNotifier {
     return _show(RevealHint(_place(p), sol[p]));
   }
 
+  /// Tutorial guidance (free, never counted as a hint): point at a
+  /// misplaced person, or show the next deduction to follow.
+  void guide() {
+    if (phase != Phase.placing) return;
+    final sol = puzzle.solution;
+    for (var p = 0; p < placement.length; p++) {
+      final c = placement[p];
+      if (c != null && c != sol[p]) {
+        _show(MistakeHint(p, c));
+        return;
+      }
+    }
+    final known = {
+      for (var p = 0; p < placement.length; p++)
+        if (placement[p] != null) p: placement[p]!,
+    };
+    final d = known.length == placement.length
+        ? null
+        : Deducer(puzzle, known: known).next();
+    _hint = d == null ? null : DeductionHint(d);
+    // Pre-select who to place, so the player only taps the board (no
+    // scrolling down to the suspects at every step).
+    if (d != null) {
+      selected = d.person;
+      mode = InputMode.place;
+    }
+    notifyListeners();
+  }
+
   Hint _show(Hint h) {
     _hint = h;
     notifyListeners();

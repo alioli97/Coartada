@@ -306,7 +306,14 @@ class Strings {
   );
   String hintReveal(String name, String at) =>
       _tr('$name estaba en $at.', '$name era a $at.', '$name was on $at.');
-  String hintDeduction(String name, String at, Set<Reason> reasons) {
+  String hintDeduction(String name, String at, Set<Reason> reasons) =>
+      '${_deduction(name, at, reasons)} ${_tr('Pide otra ayuda si quieres que lo coloque.', 'Demana una altra ajuda si vols que el col·loqui.', 'Ask again if you want it placed for you.')}';
+
+  /// Tutorial version: the same reasoning, then what to tap.
+  String tutorialStep(String name, String at, Set<Reason> reasons) =>
+      '${_deduction(name, at, reasons)} ${_tr('He seleccionado a $name: toca $at.', 'He seleccionat $name: toca $at.', 'I\'ve selected $name: tap $at.')}';
+
+  String _deduction(String name, String at, Set<Reason> reasons) {
     final why = [
       for (final r in Reason.values)
         if (reasons.contains(r)) _reason(r),
@@ -318,11 +325,56 @@ class Strings {
         : '${why.sublist(0, why.length - 1).join(', ')} '
               '${_tr('y', 'i', 'and')} ${why.last}';
     return _tr(
-      '$name solo puede estar en $at. Se deduce de $because. Pide otra ayuda si quieres que lo coloque.',
-      '$name només pot ser a $at. Es dedueix de $because. Demana una altra ajuda si vols que el col·loqui.',
-      '$name can only be on $at. It follows from $because. Ask again if you want it placed for you.',
+      '$name solo puede estar en $at. Se deduce de $because.',
+      '$name només pot ser a $at. Es dedueix de $because.',
+      '$name can only be on $at. It follows from $because.',
     );
   }
+
+  // Tutorial
+  String tutorialIntro1(String victim) => _tr(
+    'Tu primer caso: han encontrado el cuerpo de $victim. Este es el plano: cada color es una habitación y las líneas gruesas son paredes. Debajo están los sospechosos y las pistas.',
+    'El teu primer cas: han trobat el cos de $victim. Aquest és el plànol: cada color és una habitació i les línies gruixudes són parets. A sota hi ha els sospitosos i les pistes.',
+    'Your first case: $victim\'s body has been found. This is the map: each color is a room and thick lines are walls. Below are the suspects and the clues.',
+  );
+  String get tutorialIntro2 => _tr(
+    'La regla de oro: en cada fila y en cada columna hay exactamente una persona, y nadie está sobre mesas, plantas o estanterías. Las casillas resaltadas te guían.',
+    'La regla d\'or: a cada fila i a cada columna hi ha exactament una persona, i ningú no és sobre taules, plantes o prestatgeries. Les caselles destacades et guien.',
+    'The golden rule: every row and column holds exactly one person, and nobody stands on tables, plants or bookshelves. Highlighted squares guide you.',
+  );
+  String get tutorialCheck => _tr(
+    '¡Todos en su sitio! Pulsa Comprobar.',
+    'Tothom al seu lloc! Prem Comprovar.',
+    'Everyone is in place! Tap Check.',
+  );
+  String get tutorialAccuse => _tr(
+    'Ahora, el culpable: es la única persona que estaba en la misma habitación que la víctima.',
+    'Ara, el culpable: és l\'única persona que era a la mateixa habitació que la víctima.',
+    'Now the culprit: the only person in the same room as the victim.',
+  );
+  String get tutorialDoneTitle => _tr(
+    '¡Ya sabes investigar!',
+    'Ja saps investigar!',
+    'You\'re a detective now!',
+  );
+  String get tutorialDoneBody => _tr(
+    'Has resuelto tu primer caso. Los de verdad se resuelven igual, con más pistas.',
+    'Has resolt el teu primer cas. Els de veritat es resolen igual, amb més pistes.',
+    'You solved your first case. Real ones work the same way, with more clues.',
+  );
+  String get tutorialStart => _tr('Empezar', 'Començar', 'Let\'s go');
+  String get tutorialSkip => _tr('Saltar', 'Saltar', 'Skip');
+  String get next => _tr('Siguiente', 'Següent', 'Next');
+  String get back => _tr('Atrás', 'Enrere', 'Back');
+  String get tutorialCardTitle =>
+      _tr('¿Primera vez?', 'Primera vegada?', 'First time?');
+  String get tutorialCardBody => _tr(
+    'Juega el caso guiado: aprenderás las reglas en dos minutos.',
+    'Juga el cas guiat: aprendràs les regles en dos minuts.',
+    'Play the guided case: learn the rules in two minutes.',
+  );
+  String get tutorialPlay => _tr('Caso guiado', 'Cas guiat', 'Guided case');
+  String get notNow => _tr('Ahora no', 'Ara no', 'Not now');
 
   String _reason(Reason r) => switch (r) {
     Reason.clues => _tr(

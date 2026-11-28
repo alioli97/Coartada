@@ -9,7 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<AppState> _state([Map<String, Object> values = const {}]) async {
-  SharedPreferences.setMockInitialValues(values);
+  SharedPreferences.setMockInitialValues({
+    'tutorial_card_hidden': true,
+    ...values,
+  });
   return AppState(await SharedPreferences.getInstance());
 }
 

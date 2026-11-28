@@ -11,6 +11,7 @@ import '../core/strings.dart';
 import '../game/game_controller.dart';
 import '../game/generator.dart';
 import '../game/model.dart';
+import '../game/tutorial.dart';
 import '../theme/app_theme.dart';
 import '../widgets/board_view.dart';
 import '../widgets/settings_sheet.dart';
@@ -24,8 +25,17 @@ class GameScreen extends StatefulWidget {
     required Puzzle puzzle,
     bool daily = false,
     this.share = shareWithPlatform,
+    this.tutorial = false,
   }) : controller = GameController(puzzle, daily: daily),
        resumed = false;
+
+  /// The guided first case (`tutorialPuzzle`): a coach explains each step;
+  /// nothing is saved or counted in the statistics.
+  GameScreen.tutorial({super.key, required this.appState})
+    : controller = GameController(tutorialPuzzle()),
+      share = shareWithPlatform,
+      resumed = false,
+      tutorial = true;
 
   /// Continues a saved game.
   const GameScreen.resume({
@@ -33,7 +43,8 @@ class GameScreen extends StatefulWidget {
     required this.appState,
     required this.controller,
     this.share = shareWithPlatform,
-  }) : resumed = true;
+  }) : resumed = true,
+       tutorial = false;
 
   final AppState appState;
 
@@ -44,6 +55,8 @@ class GameScreen extends StatefulWidget {
   /// A resumed game is the saved one, so leaving it always updates the save
   /// (time played); a new one only once the player has moved.
   final bool resumed;
+
+  final bool tutorial;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -85,17 +98,33 @@ class _GameScreenState extends State<GameScreen>
     final now = _progressKey();
     if (now == _lastProgress) return;
     _lastProgress = now;
+    if (widget.tutorial) {
+      if (_coachStep >= _introSteps) game.guide();
+      return; // the tutorial is never saved
+    }
     _dirty = true;
     _persist();
   }
 
   late String _lastProgress;
 
+  /// Tutorial: intro pages first, then the coach follows the game.
+  static const _introSteps = 2;
+  int _coachStep = 0;
+
+  void _coachNext() {
+    setState(() => _coachStep++);
+    if (_coachStep >= _introSteps) game.guide();
+  }
+
+  void _coachBack() => setState(() => _coachStep--);
+
   String _progressKey() =>
       '${game.placement}|${game.crosses}|${game.doneClues}|'
       '${game.notes}|${game.hints}|${game.wrongAccusations}|${game.phase}';
 
   void _persist() {
+    if (widget.tutorial) return;
     if (game.phase == Phase.solved) {
       widget.appState.clearSavedGame();
     } else {
@@ -188,12 +217,16 @@ class _GameScreenState extends State<GameScreen>
         // A "not them" message from a wrong guess must not linger.
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         _haptic(HapticFeedback.mediumImpact);
-        widget.appState.recordSolved(
-          p,
-          game.elapsed,
-          daily: game.daily,
-          hints: game.hints,
-        );
+        if (widget.tutorial) {
+          widget.appState.tutorialDone = true;
+        } else {
+          widget.appState.recordSolved(
+            p,
+            game.elapsed,
+            daily: game.daily,
+            hints: game.hints,
+          );
+        }
         // Let the reveal (dimmed rooms, outlined crime scene) play first.
         await Future<void>.delayed(
           Motion.of(context, Motion.reveal + Motion.revealHold),
@@ -207,7 +240,31 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
+  Future<void> _showTutorialDone() async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: Icon(
+          Icons.school_outlined,
+          color: Theme.of(context).colorScheme.primary,
+          size: 40,
+        ),
+        title: Text(s.tutorialDoneTitle),
+        content: Text(s.tutorialDoneBody, textAlign: TextAlign.center),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(s.tutorialStart),
+          ),
+        ],
+      ),
+    );
+    if (mounted) Navigator.pop(context);
+  }
+
   Future<void> _showSolved() async {
+    if (widget.tutorial) return _showTutorialDone();
     final p = game.puzzle;
     final room = p.board.rooms[p.board.roomOf[p.solution[p.victim]]];
     final again = await showDialog<bool>(
@@ -278,6 +335,30 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
+  String _coachText() {
+    if (_coachStep == 0) {
+      return s.tutorialIntro1(game.puzzle.name(game.puzzle.victim));
+    }
+    if (_coachStep == 1) return s.tutorialIntro2;
+    if (game.phase == Phase.accusing) return s.tutorialAccuse;
+    if (game.allPlaced) return s.tutorialCheck;
+    final p = game.puzzle;
+    String at(int cell) =>
+        '${Strings.colLetter(game.board.col(cell))}${game.board.row(cell) + 1}';
+    return switch (game.activeHint) {
+      MistakeHint(:final person, :final cell) => s.hintMistake(
+        p.name(person),
+        at(cell),
+      ),
+      DeductionHint(:final deduction) => s.tutorialStep(
+        p.name(deduction.person),
+        at(deduction.cell),
+        deduction.reasons,
+      ),
+      _ => s.tutorialCheck,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = game.puzzle;
@@ -298,7 +379,11 @@ class _GameScreenState extends State<GameScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  game.daily ? s.dailyCase : s.caseTitle(p.seed),
+                  widget.tutorial
+                      ? s.tutorialPlay
+                      : game.daily
+                      ? s.dailyCase
+                      : s.caseTitle(p.seed),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
@@ -352,7 +437,25 @@ class _GameScreenState extends State<GameScreen>
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
                   children: [
-                    _gutter(_Briefing(puzzle: p, strings: s)),
+                    if (widget.tutorial && game.phase != Phase.solved) ...[
+                      _gutter(
+                        _Coach(
+                          text: _coachText(),
+                          step: _coachStep,
+                          onNext: _coachStep < _introSteps ? _coachNext : null,
+                          onBack: _coachStep > 0 && _coachStep < _introSteps
+                              ? _coachBack
+                              : null,
+                          onSkip: () => Navigator.pop(context),
+                          strings: s,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    // In the tutorial the coach replaces the briefing, so the
+                    // whole board fits on a phone screen above the action bar.
+                    if (!widget.tutorial)
+                      _gutter(_Briefing(puzzle: p, strings: s)),
                     const SizedBox(height: 16),
                     AnimatedBuilder(
                       animation: _shake,
@@ -376,7 +479,13 @@ class _GameScreenState extends State<GameScreen>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _gutter(_Inspector(game: game, strings: s)),
+                    _gutter(
+                      _Inspector(
+                        game: game,
+                        strings: s,
+                        showHint: !widget.tutorial,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     _gutter(_RoomLegend(board: p.board, strings: s)),
                     const SizedBox(height: 20),
@@ -464,14 +573,86 @@ class _Briefing extends StatelessWidget {
 }
 
 /// What the last tapped square is, or what to do next.
+/// The tutorial's guide: what to look at and what to do now.
+class _Coach extends StatelessWidget {
+  const _Coach({
+    required this.text,
+    required this.step,
+    required this.onNext,
+    required this.onBack,
+    required this.onSkip,
+    required this.strings,
+  });
+  final String text;
+  final int step;
+  final VoidCallback? onNext;
+  final VoidCallback? onBack;
+  final VoidCallback onSkip;
+  final Strings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+        decoration: BoxDecoration(
+          color: scheme.secondary.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: scheme.secondary),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ExcludeSemantics(
+                  child: Icon(Icons.school_outlined, color: scheme.secondary),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(text)),
+              ],
+            ),
+            // Wraps onto a second line rather than overflowing.
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
+              overflowAlignment: OverflowBarAlignment.end,
+              spacing: 8,
+              children: [
+                TextButton(
+                  onPressed: onSkip,
+                  child: Text(strings.tutorialSkip),
+                ),
+                if (onBack != null)
+                  TextButton(onPressed: onBack, child: Text(strings.back)),
+                if (onNext != null)
+                  FilledButton(onPressed: onNext, child: Text(strings.next)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _Inspector extends StatelessWidget {
-  const _Inspector({required this.game, required this.strings});
+  const _Inspector({
+    required this.game,
+    required this.strings,
+    this.showHint = true,
+  });
+
+  /// Off in the tutorial: the coach card explains instead.
+  final bool showHint;
   final GameController game;
   final Strings strings;
 
   @override
   Widget build(BuildContext context) {
-    final hint = game.activeHint;
+    final hint = showHint ? game.activeHint : null;
     if (hint != null) {
       return _HintCard(game: game, hint: hint, strings: strings);
     }
