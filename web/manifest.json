@@ -1,11 +1,11 @@
 {
-    "name": "coartada",
-    "short_name": "coartada",
+    "name": "Coartada",
+    "short_name": "Coartada",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Logic deduction game: place suspects, find the culprit.",
+    "background_color": "#FDFBF7",
+    "theme_color": "#15803D",
+    "description": "Deduce dónde estaba cada sospechoso y descubre al culpable.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

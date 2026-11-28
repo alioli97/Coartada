@@ -54,7 +54,7 @@ search before designing, run its pre-delivery checklist before committing.
 
 ## F. Release
 
-- [ ] 16. Branding: app icon, splash (`flutter_launcher_icons`,
+- [x] 16. Branding: app icon, splash (`flutter_launcher_icons`,
       `flutter_native_splash`), "Coartada" display name on Android and iOS.
 - [ ] 17. Privacy policy and support page in `site/` (GitHub Pages workflow);
       "About" screen with licenses.
